@@ -1,10 +1,19 @@
+import 'react-native-gesture-handler';
+
 import React, {FC} from 'react';
-import {Home} from './src/screens';
+import {NavigationContainer} from '@react-navigation/native';
+import {EmptyProps} from '~/types';
+import {AuthContextProvider} from '~/context/AuthContext';
+import RootNav from '~/navigation';
 
-export interface Props {}
-
-const App: FC<Props> = ({}) => {
-  return <Home />;
+const App: FC<EmptyProps> = () => {
+  return (
+    <AuthContextProvider>
+      <NavigationContainer>
+        <RootNav />
+      </NavigationContainer>
+    </AuthContextProvider>
+  );
 };
 
 export default App;
