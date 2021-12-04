@@ -1,10 +1,14 @@
 import React, {FC, useEffect} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {responsiveFontSize} from 'react-native-responsive-dimensions';
-import {Icons} from '~/components';
+import {Image, StyleSheet, Text, View} from 'react-native';
+import {
+  responsiveFontSize,
+  responsiveWidth,
+} from 'react-native-responsive-dimensions';
+import {Icons, ScreenContainer} from '~/components';
 import {Colors} from '~/styles';
 import {EmptyProps} from '~/types';
 import {useAuthContext} from '~/context/AuthContext';
+import {logo} from '~/assets/images';
 
 const Splash: FC<EmptyProps> = () => {
   const {setIsLoading} = useAuthContext();
@@ -12,14 +16,14 @@ const Splash: FC<EmptyProps> = () => {
   useEffect(() => {
     const tId = setTimeout(() => {
       setIsLoading(false);
+      clearTimeout(tId);
     }, 3000);
   }, []);
 
   return (
-    <View style={[styles.f1, styles.container]}>
-      <Icons.MaterialCommunityIcons name="nfc" size={responsiveFontSize(15)} />
-      <Text style={styles.splashText}>Norsa</Text>
-    </View>
+    <ScreenContainer style={styles.container}>
+      <Image source={logo} style={styles.logo} />
+    </ScreenContainer>
   );
 };
 
@@ -30,10 +34,11 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.white,
   },
-  splashText: {
-    fontSize: responsiveFontSize(5),
-    color: Colors.red,
+  logo: {
+    height: responsiveWidth(75),
+    width: responsiveWidth(75),
   },
 });
 

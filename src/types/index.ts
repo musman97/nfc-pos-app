@@ -4,6 +4,17 @@ import {routeNames} from '~/navigation/routeNames';
 // Common
 
 export interface EmptyProps {}
+export type NfcTagReadResult = {
+  success: boolean;
+  error: string;
+  userId: string;
+};
+export type ParseTagResult = {
+  success: boolean;
+  error: string;
+  text: string;
+};
+export type NfcTagScanningStatus = 'scanning' | 'error' | 'success';
 
 // Context
 

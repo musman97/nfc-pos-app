@@ -1,168 +1,178 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useState, useCallback, useEffect} from 'react';
 import {
-  StyleSheet,
-  Text,
-  ToastAndroid,
-  TouchableOpacity,
   View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  TextInput,
   Alert,
 } from 'react-native';
-import NfcManager, {NfcEvents, Ndef, NfcTech} from 'react-native-nfc-manager';
 import {
   responsiveFontSize,
   responsiveHeight,
+  responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {print} from '../native_modules/PosPrinter';
-
-const showToast: (message: string) => void = message => {
-  ToastAndroid.show(message, ToastAndroid.SHORT);
-};
+import {Button, Header, Icons, ScreenContainer} from '~/components';
+import BottomModal from '~/components/BottomModal';
+import {
+  checkIfNfcEnabled,
+  cleanUpReadingListners,
+  initNfcManager,
+  readNfcTag,
+} from '~/core/NfcReaderWriter';
+import {Colors} from '~/styles';
+import {NfcTagScanningStatus} from '~/types';
 
 export interface Props {}
 
-const readNdefTag: () => Promise<any | null> = () => {
-  const cleanUp = () => {
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
-    NfcManager.setEventListener(NfcEvents.SessionClosed, null);
-  };
-
-  return new Promise(resolve => {
-    let tagFound = null;
-
-    NfcManager.setEventListener(NfcEvents.DiscoverTag, tag => {
-      tagFound = tag;
-      resolve(tagFound);
-      NfcManager.unregisterTagEvent().catch(() => 0);
-    });
-
-    NfcManager.setEventListener(NfcEvents.SessionClosed, () => {
-      cleanUp();
-      if (!tagFound) {
-        resolve(null);
-      }
-    });
-
-    NfcManager.registerTagEvent();
-  });
-};
-
-const parseText: (tag: any) => string = tag => {
-  try {
-    if (Ndef.isType(tag.ndefMessage[0], Ndef.TNF_WELL_KNOWN, Ndef.RTD_TEXT)) {
-      return Ndef.text.decodePayload(tag.ndefMessage[0].payload);
-    }
-  } catch (error) {
-    console.log('Error Parsing Nfc tag', error);
-    return '';
-  }
-};
-
 const Home: FC<Props> = ({}) => {
-  const [reading, setReading] = useState(false);
-  const [writing, setWriting] = useState(false);
-
-  const [parsedText, setParsedText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [bottomModalShown, setBottomModalShown] = useState(false);
+  const [scanningStatus, setScanningStatus] =
+    useState<NfcTagScanningStatus>('scanning');
+  const [error, setError] = useState('');
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     (async () => {
       try {
-        await NfcManager.start();
-        showToast('Nfc Manager Initialized');
+        await initNfcManager();
+        console.log('Nfc Manager Init');
       } catch (error) {
-        console.warn('Error initializing NfcManager', error);
+        console.log('Error Initializing Nfc Manager');
       }
     })();
   }, []);
 
-  const onReadNfcTagPressed = async () => {
+  const readTag = useCallback(async () => {
     try {
-      if (writing) {
-        showToast('Already serching for Nfc Tag to write');
-        return;
-      }
-      if (reading) {
-        showToast('Already serching for Nfc Tag to read');
-        return;
+      setScanningStatus('scanning');
+      const scanningResult = await readNfcTag();
+      console.log('Nfc Tag Result', scanningResult);
+
+      if (scanningResult.success) {
+        console.log('userId', scanningResult.userId);
+        setUserId(scanningResult.userId);
+        setScanningStatus('success');
       } else {
-        setReading(true);
+        setError(scanningResult.error);
+        setScanningStatus('error');
       }
-
-      const tag = await readNdefTag();
-      const text = parseText(tag);
-
-      showToast('Text from Nfc Tag: ' + text);
-      setParsedText(text);
-
-      console.log('Read tag: ', tag);
     } catch (error) {
-      console.log('Error Reading Nfc Tag', error);
-      Alert.alert('Error', 'Error reading Nfc Tag ' + error.message);
-    } finally {
-      setReading(false);
+      console.log('Error Reading Nfc', error);
     }
-  };
+  }, []);
 
-  const onWriteNfcTagPressed = async () => {
+  const showBottomModal = useCallback(async () => {
     try {
-      if (reading) {
-        showToast('Already serching for Nfc Tag to read');
-        return;
-      }
-      if (writing) {
-        showToast('Already serching for Nfc Tag to write');
-        return;
+      setLoading(true);
+      const isEnabled = await checkIfNfcEnabled();
+      setLoading(false);
+      if (isEnabled) {
+        setBottomModalShown(true);
+        readTag();
       } else {
-        setWriting(true);
+        Alert.alert(
+          'NFC Disabled',
+          'Nfc is disabled. Please enable Nfc and try again',
+        );
       }
-      await NfcManager.requestTechnology(NfcTech.Ndef, {
-        alertMessage: 'Ready to write some NDEF',
-      });
-
-      const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello Nfc')]);
-
-      if (bytes) {
-        await NfcManager.ndefHandler.writeNdefMessage(bytes);
-        showToast('Writing to Nfc Tag was Successfull');
-      }
-    } catch (ex) {
-      console.log('Error writing Nfc Tag', ex);
-      Alert.alert('Error', 'Error Writing to Nfc Tag ' + ex.message);
-    } finally {
-      setWriting(false);
+    } catch (error) {
+      console.log('Error checking nfc status', error);
     }
+  }, []);
 
-    NfcManager.cancelTechnologyRequest().catch(() => 0);
-  };
+  const hideBottomModal = useCallback(() => {
+    cleanUpReadingListners();
+    setBottomModalShown(false);
+  }, []);
 
-  const onPrintPressed: () => Promise<void> = async () => {
-    if (parsedText === '') {
-      showToast('Parsed Text is Empty. Please try again');
+  const onScanNfcPressed = useCallback(() => {
+    showBottomModal();
+  }, []);
+
+  const onTryAgainPressed = useCallback(() => {
+    readTag();
+  }, []);
+
+  const renderNfcScanning = useCallback(() => {
+    return (
+      <View style={styles.nfcScanningContentContainer}>
+        <ActivityIndicator animating color={Colors.primary} size="large" />
+        <Text style={styles.scanningNfcText}>Scanning Nearby NFC card</Text>
+      </View>
+    );
+  }, []);
+
+  const renderTryAgain = useCallback(() => {
+    return (
+      <View style={styles.nfcScanningContentContainer}>
+        <Text style={styles.tryAgainText}>{error}</Text>
+        <Button title="Try Again" onPress={onTryAgainPressed} />
+      </View>
+    );
+  }, [error]);
+
+  const renderNfcTagFound = useCallback(() => {
+    return (
+      <View style={styles.nfcScanningContentContainer}>
+        <Text style={styles.userIdText}>User Id: {userId}</Text>
+        <Text style={styles.scanningNfcText}>Enter PIN Code</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="PIN Code"
+          keyboardType="numeric"
+        />
+      </View>
+    );
+  }, [userId]);
+
+  const renderModalContent = useCallback(() => {
+    if (scanningStatus === 'scanning') {
+      return renderNfcScanning();
+    } else if (scanningStatus === 'success') {
+      return renderNfcTagFound();
     } else {
-      try {
-        await print(parsedText);
-      } catch (error) {
-        Alert.alert('Error', 'Error Printing parsed text' + error.message);
-      }
+      return renderTryAgain();
     }
-  };
+  }, [scanningStatus]);
 
   return (
-    <View style={[styles.f1, styles.container]}>
-      <View style={styles.contentContainer}>
-        <TouchableOpacity style={styles.btn} onPress={onReadNfcTagPressed}>
-          <Text style={styles.btnText}>Read Nfc Tag</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btn} onPress={onWriteNfcTagPressed}>
-          <Text style={styles.btnText}>Write Nfc Tag</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.btn} onPress={onPrintPressed}>
-          <Text style={styles.btnText}>Print Parsed Text</Text>
-        </TouchableOpacity>
-        <Text style={styles.parsedTextMessage}>
-          Parsed Text: <Text style={styles.parsedText}>{parsedText}</Text>
-        </Text>
+    <ScreenContainer>
+      <Header title="Home" />
+      <View style={styles.f1}>
+        <View style={styles.contentContainer}>
+          <View style={styles.nfcIconWrapper}>
+            <Icons.MaterialIcons
+              name="nfc"
+              color={Colors.primary}
+              size={responsiveWidth(55)}
+            />
+          </View>
+          <Button
+            title="Scan NFC"
+            style={styles.scanNfcBtn}
+            loading={loading}
+            onPress={onScanNfcPressed}
+          />
+        </View>
       </View>
-    </View>
+      <BottomModal visible={bottomModalShown}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.closeBottomModalBtn}
+            onPress={hideBottomModal}>
+            <Icons.MaterialIcons
+              name="close"
+              color={Colors.black}
+              size={responsiveFontSize(4)}
+            />
+          </TouchableOpacity>
+          {renderModalContent()}
+        </View>
+      </BottomModal>
+    </ScreenContainer>
   );
 };
 
@@ -170,32 +180,55 @@ const styles = StyleSheet.create({
   f1: {
     flex: 1,
   },
-  container: {
-    alignItems: 'center',
-    paddingTop: responsiveHeight(10),
-  },
   contentContainer: {
+    alignSelf: 'center',
+    marginTop: responsiveHeight(10),
+    alignItems: 'center',
     width: '80%',
   },
-  btn: {
-    backgroundColor: '#0ba6ff',
-    marginBottom: responsiveHeight(5),
-    padding: responsiveFontSize(2),
-    borderRadius: responsiveFontSize(2) / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+  nfcIconWrapper: {
+    borderWidth: responsiveWidth(0.3),
+    borderColor: Colors.primary,
+    borderRadius: responsiveWidth(50) / 20,
+    padding: responsiveWidth(2),
   },
-  btnText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: responsiveFontSize(2),
+  scanNfcBtn: {
+    marginTop: responsiveHeight(4),
+    width: '50%',
   },
-  parsedTextMessage: {
+  modalContainer: {
     alignSelf: 'center',
-    fontSize: responsiveFontSize(2),
+    width: '90%',
+    paddingVertical: responsiveHeight(2),
   },
-  parsedText: {
-    color: 'red',
+  closeBottomModalBtn: {
+    alignSelf: 'flex-end',
+  },
+  nfcScanningContentContainer: {
+    alignItems: 'center',
+    paddingVertical: responsiveHeight(2),
+  },
+  scanningNfcText: {
+    color: Colors.black,
+    marginVertical: responsiveHeight(2),
+    fontSize: responsiveFontSize(2.5),
+  },
+  tryAgainText: {
+    color: Colors.black,
+    marginBottom: responsiveHeight(3),
+    textAlign: 'center',
+    fontSize: responsiveFontSize(2.5),
+  },
+  userIdText: {
+    color: Colors.black,
+    fontSize: responsiveFontSize(2.5),
+  },
+  input: {
+    borderWidth: responsiveWidth(0.3),
+    borderColor: Colors.border,
+    width: '100%',
+    borderRadius: responsiveWidth(50) / 8,
+    padding: responsiveFontSize(1.5),
   },
 });
 
