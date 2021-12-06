@@ -1,11 +1,7 @@
 import {NativeModules} from 'react-native';
+import {PosPrinterInterface} from '../types/index';
 
 const PosPrinterModule = NativeModules.PosPrinterModule;
-
-interface PosPrinterInterface {
-  print: (textToBePrinted: string) => Promise<boolean>;
-}
-
 const module = PosPrinterModule as PosPrinterInterface;
 
 export const print: (

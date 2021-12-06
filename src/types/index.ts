@@ -3,18 +3,30 @@ import {routeNames} from '~/navigation/routeNames';
 
 // Common
 
+export interface PosPrinterInterface {
+  print: (textToBePrinted: string) => Promise<boolean>;
+}
+
 export interface EmptyProps {}
+
 export type NfcTagReadResult = {
   success: boolean;
   error: string;
-  userId: string;
+  text: string;
 };
+
+export type NfcTagWriteResult = {
+  success: boolean;
+  error: string;
+};
+
 export type ParseTagResult = {
   success: boolean;
   error: string;
   text: string;
 };
-export type NfcTagScanningStatus = 'scanning' | 'error' | 'success';
+
+export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
 // Context
 

@@ -19,7 +19,7 @@ const Login: FC<Props> = ({}) => {
 
   const [loading, setLoading] = useState(false);
 
-  const onEmailEndEditing = useCallback(() => {
+  const onUsernameEndEditing = useCallback(() => {
     passwordTextInpurRef.current.focus();
   }, []);
   const onLoginPressed = useCallback(() => {
@@ -36,9 +36,8 @@ const Login: FC<Props> = ({}) => {
         <Image source={logo} style={styles.logo} />
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          onEndEditing={onEmailEndEditing}
-          keyboardType="email-address"
+          placeholder="Username"
+          onEndEditing={onUsernameEndEditing}
           returnKeyType="next"
         />
         <View style={styles.inputsSeprator} />

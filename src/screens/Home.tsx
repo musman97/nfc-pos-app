@@ -18,21 +18,30 @@ import BottomModal from '~/components/BottomModal';
 import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
+  cleanUpWriteRequest,
   initNfcManager,
   readNfcTag,
+  writeNfcTag,
 } from '~/core/NfcReaderWriter';
 import {Colors} from '~/styles';
-import {NfcTagScanningStatus} from '~/types';
+import {NfcTagOperationStatus} from '~/types';
+import {showToast} from '~/utils';
 
 export interface Props {}
 
 const Home: FC<Props> = ({}) => {
   const [loading, setLoading] = useState(false);
+  const [writeNfcTagLoading, setWriteNfcTagLoading] = useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
+  const [writeBottomModalShown, setWriteBottomModalShown] = useState(false);
   const [scanningStatus, setScanningStatus] =
-    useState<NfcTagScanningStatus>('scanning');
+    useState<NfcTagOperationStatus>('scanning');
+  const [writeNfcTagStatus, setWriteNfcTagStatus] =
+    useState<NfcTagOperationStatus>('none');
+  const [writeNfcError, setWriteNfcError] = useState('');
   const [error, setError] = useState('');
-  const [userId, setUserId] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardNumberToBeWritten, setCardNumberToBeWritten] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -52,8 +61,8 @@ const Home: FC<Props> = ({}) => {
       console.log('Nfc Tag Result', scanningResult);
 
       if (scanningResult.success) {
-        console.log('userId', scanningResult.userId);
-        setUserId(scanningResult.userId);
+        console.log('cardNumber', scanningResult.text);
+        setCardNumber(scanningResult.text);
         setScanningStatus('success');
       } else {
         setError(scanningResult.error);
@@ -63,6 +72,25 @@ const Home: FC<Props> = ({}) => {
       console.log('Error Reading Nfc', error);
     }
   }, []);
+
+  const writeTag = useCallback(async () => {
+    try {
+      setWriteNfcTagStatus('scanning');
+      console.log(`Writing user id: ${cardNumberToBeWritten} on nfc tag`);
+      const writingResult = await writeNfcTag(cardNumberToBeWritten);
+      console.log('Write Nfc Tag Result', writingResult);
+
+      if (writingResult.success) {
+        showToast('Data was Successfully Written');
+        hideWriteNfcBottomModal();
+      } else {
+        setWriteNfcError(writingResult.error);
+        setWriteNfcTagStatus('error');
+      }
+    } catch (error) {
+      console.log('Error Writing Nfc', error);
+    }
+  }, [cardNumberToBeWritten]);
 
   const showBottomModal = useCallback(async () => {
     try {
@@ -88,36 +116,118 @@ const Home: FC<Props> = ({}) => {
     setBottomModalShown(false);
   }, []);
 
+  const showWriteNfcBottomModal = useCallback(async () => {
+    try {
+      setWriteNfcTagLoading(true);
+      const isEnabled = await checkIfNfcEnabled();
+      setWriteNfcTagLoading(false);
+
+      if (isEnabled) {
+        setWriteNfcTagStatus('none');
+        setWriteBottomModalShown(true);
+      } else {
+        Alert.alert(
+          'NFC Disabled',
+          'Nfc is disabled. Please enable Nfc and try again',
+        );
+      }
+    } catch (error) {
+      console.log('Error Checking nfc status');
+    }
+  }, []);
+
+  const hideWriteNfcBottomModal = useCallback(() => {
+    cleanUpWriteRequest();
+    setWriteBottomModalShown(false);
+    setCardNumberToBeWritten('');
+  }, []);
+
   const onScanNfcPressed = useCallback(() => {
     showBottomModal();
+  }, []);
+
+  const onWriteUserIdPressed = useCallback(() => {
+    if (cardNumberToBeWritten === '') {
+      showToast('Card Number cannot be empty');
+    } else {
+      writeTag();
+    }
+  }, [cardNumberToBeWritten]);
+
+  const onWriteNfcPressed = useCallback(() => {
+    showWriteNfcBottomModal();
   }, []);
 
   const onTryAgainPressed = useCallback(() => {
     readTag();
   }, []);
 
+  const onWriteTryAgainPressed = useCallback(() => {
+    setCardNumberToBeWritten('');
+    setWriteNfcTagStatus('none');
+  }, []);
+
   const renderNfcScanning = useCallback(() => {
     return (
-      <View style={styles.nfcScanningContentContainer}>
+      <View style={styles.nfcContentContainer}>
         <ActivityIndicator animating color={Colors.primary} size="large" />
         <Text style={styles.scanningNfcText}>Scanning Nearby NFC card</Text>
       </View>
     );
   }, []);
 
+  const renderWriteNfcScanning = useCallback(() => {
+    return (
+      <View style={styles.nfcContentContainer}>
+        <ActivityIndicator animating color={Colors.primary} size="large" />
+        <Text style={styles.scanningNfcText}>
+          Scanning Nearby NFC card to write data
+        </Text>
+      </View>
+    );
+  }, []);
+
+  const renderWriteUserIdContent = useCallback(() => {
+    return (
+      <View style={styles.nfcContentContainer}>
+        <Text style={styles.inputUserIdText}>Enter Card Number</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Card Number"
+          value={cardNumberToBeWritten}
+          onChangeText={setCardNumberToBeWritten}
+        />
+        <Button
+          style={styles.writeNfcTagBtn}
+          title="Write Card Number"
+          onPress={onWriteUserIdPressed}
+        />
+      </View>
+    );
+  }, [cardNumberToBeWritten]);
+
   const renderTryAgain = useCallback(() => {
     return (
-      <View style={styles.nfcScanningContentContainer}>
+      <View style={styles.nfcContentContainer}>
         <Text style={styles.tryAgainText}>{error}</Text>
         <Button title="Try Again" onPress={onTryAgainPressed} />
       </View>
     );
   }, [error]);
 
+  const renderWriteTagTryAgain = useCallback(() => {
+    return (
+      <View style={styles.nfcContentContainer}>
+        <Text style={styles.tryAgainText}>{writeNfcError}</Text>
+        <Button title="Try Again" onPress={onWriteTryAgainPressed} />
+      </View>
+    );
+  }, [writeNfcError]);
+
   const renderNfcTagFound = useCallback(() => {
     return (
-      <View style={styles.nfcScanningContentContainer}>
-        <Text style={styles.userIdText}>User Id: {userId}</Text>
+      <View style={styles.nfcContentContainer}>
+        <Text style={styles.userIdText}>Card Number: {cardNumber}</Text>
         <Text style={styles.scanningNfcText}>Enter PIN Code</Text>
         <TextInput
           style={styles.input}
@@ -126,7 +236,7 @@ const Home: FC<Props> = ({}) => {
         />
       </View>
     );
-  }, [userId]);
+  }, [cardNumber]);
 
   const renderModalContent = useCallback(() => {
     if (scanningStatus === 'scanning') {
@@ -137,6 +247,18 @@ const Home: FC<Props> = ({}) => {
       return renderTryAgain();
     }
   }, [scanningStatus]);
+
+  const renderWriteNfcModalContent = useCallback(() => {
+    if (writeNfcTagStatus === 'none') {
+      return renderWriteUserIdContent();
+    } else if (writeNfcTagStatus === 'scanning') {
+      return renderWriteNfcScanning();
+    } else if (writeNfcTagStatus === 'error') {
+      return renderWriteTagTryAgain();
+    } else {
+      return null;
+    }
+  }, [writeNfcTagStatus, cardNumberToBeWritten]);
 
   return (
     <ScreenContainer>
@@ -151,10 +273,16 @@ const Home: FC<Props> = ({}) => {
             />
           </View>
           <Button
-            title="Scan NFC"
+            title="Read NFC card"
             style={styles.scanNfcBtn}
             loading={loading}
             onPress={onScanNfcPressed}
+          />
+          <Button
+            title="Write NFC card"
+            style={styles.scanNfcBtn}
+            loading={writeNfcTagLoading}
+            onPress={onWriteNfcPressed}
           />
         </View>
       </View>
@@ -170,6 +298,20 @@ const Home: FC<Props> = ({}) => {
             />
           </TouchableOpacity>
           {renderModalContent()}
+        </View>
+      </BottomModal>
+      <BottomModal visible={writeBottomModalShown}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.closeBottomModalBtn}
+            onPress={hideWriteNfcBottomModal}>
+            <Icons.MaterialIcons
+              name="close"
+              color={Colors.black}
+              size={responsiveFontSize(4)}
+            />
+          </TouchableOpacity>
+          {renderWriteNfcModalContent()}
         </View>
       </BottomModal>
     </ScreenContainer>
@@ -204,7 +346,7 @@ const styles = StyleSheet.create({
   closeBottomModalBtn: {
     alignSelf: 'flex-end',
   },
-  nfcScanningContentContainer: {
+  nfcContentContainer: {
     alignItems: 'center',
     paddingVertical: responsiveHeight(2),
   },
@@ -229,6 +371,15 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: responsiveWidth(50) / 8,
     padding: responsiveFontSize(1.5),
+  },
+  inputUserIdText: {
+    color: Colors.black,
+    marginVertical: responsiveHeight(2),
+    fontSize: responsiveFontSize(2.5),
+  },
+  writeNfcTagBtn: {
+    marginTop: responsiveHeight(2),
+    width: '60%',
   },
 });
 
