@@ -1,7 +1,7 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import React from 'react';
 import {useAuthContext} from '~/context/AuthContext';
-import {Home, Login, Splash} from '~/screens';
+import {AddItems, Home, Login, Splash} from '~/screens';
 import {RootStackParamList} from '~/types';
 import {stackScreenOptions} from './config';
 import {routeNames} from './routeNames';
@@ -11,7 +11,7 @@ const RootStack = createStackNavigator<RootStackParamList>();
 const RootNav = () => {
   const {isLoading, isLoggedIn} = useAuthContext();
 
-  const renderNav = () => {
+  const renderScreens = () => {
     if (isLoading) {
       return (
         <>
@@ -21,6 +21,7 @@ const RootNav = () => {
     } else if (isLoggedIn) {
       return (
         <>
+          <RootStack.Screen name={routeNames.AddItems} component={AddItems} />
           <RootStack.Screen name={routeNames.Home} component={Home} />
         </>
       );
@@ -35,7 +36,7 @@ const RootNav = () => {
 
   return (
     <RootStack.Navigator screenOptions={stackScreenOptions}>
-      {renderNav()}
+      {renderScreens()}
     </RootStack.Navigator>
   );
 };

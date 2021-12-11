@@ -1,4 +1,5 @@
 import {Dispatch, SetStateAction} from 'react';
+import {StackNavigationProp} from '@react-navigation/stack';
 import {routeNames} from '~/navigation/routeNames';
 
 // Common
@@ -28,6 +29,11 @@ export type ParseTagResult = {
 
 export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
+export type Item = {
+  name: string;
+  price: number;
+};
+
 // Context
 
 export interface AuthContextValue {
@@ -49,8 +55,14 @@ export type AuthStackParamList = {
 
 export type MainStackParamList = {
   [routeNames.Home]: undefined;
+  [routeNames.AddItems]: undefined;
 };
 
 export type RootStackParamList = SplashStackParamList &
   AuthStackParamList &
   MainStackParamList;
+
+export type HomeScreenNavProp = StackNavigationProp<
+  MainStackParamList,
+  routeNames.Home
+>;

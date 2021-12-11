@@ -23,13 +23,16 @@ import {
   readNfcTag,
   writeNfcTag,
 } from '~/core/NfcReaderWriter';
+import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
-import {NfcTagOperationStatus} from '~/types';
+import {HomeScreenNavProp, NfcTagOperationStatus} from '~/types';
 import {showToast} from '~/utils';
 
-export interface Props {}
+export interface Props {
+  navigation: HomeScreenNavProp;
+}
 
-const Home: FC<Props> = ({}) => {
+const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [loading, setLoading] = useState(false);
   const [writeNfcTagLoading, setWriteNfcTagLoading] = useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
@@ -167,6 +170,11 @@ const Home: FC<Props> = ({}) => {
     setWriteNfcTagStatus('none');
   }, []);
 
+  const onPinCodeSubmitPressed = useCallback(() => {
+    hideBottomModal();
+    navigate(routeNames.AddItems);
+  }, []);
+
   const renderNfcScanning = useCallback(() => {
     return (
       <View style={styles.nfcContentContainer}>
@@ -233,6 +241,11 @@ const Home: FC<Props> = ({}) => {
           style={styles.input}
           placeholder="PIN Code"
           keyboardType="numeric"
+        />
+        <Button
+          title="Submit"
+          onPress={onPinCodeSubmitPressed}
+          style={styles.submitPinCodeBtn}
         />
       </View>
     );
@@ -378,6 +391,10 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(2.5),
   },
   writeNfcTagBtn: {
+    marginTop: responsiveHeight(2),
+    width: '60%',
+  },
+  submitPinCodeBtn: {
     marginTop: responsiveHeight(2),
     width: '60%',
   },
