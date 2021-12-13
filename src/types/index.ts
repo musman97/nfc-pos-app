@@ -1,5 +1,5 @@
 import {Dispatch, SetStateAction} from 'react';
-import {StackNavigationProp} from '@react-navigation/stack';
+import {StackNavigationProp, StackScreenProps} from '@react-navigation/stack';
 import {routeNames} from '~/navigation/routeNames';
 
 // Common
@@ -34,6 +34,11 @@ export type Item = {
   price: number;
 };
 
+export type Customer = {
+  name: string;
+  code: string;
+};
+
 // Context
 
 export interface AuthContextValue {
@@ -55,7 +60,9 @@ export type AuthStackParamList = {
 
 export type MainStackParamList = {
   [routeNames.Home]: undefined;
-  [routeNames.AddItems]: undefined;
+  [routeNames.AddItems]: {
+    code: string;
+  };
 };
 
 export type RootStackParamList = SplashStackParamList &
@@ -65,4 +72,9 @@ export type RootStackParamList = SplashStackParamList &
 export type HomeScreenNavProp = StackNavigationProp<
   MainStackParamList,
   routeNames.Home
+>;
+
+export type AddItemsScreeProps = StackScreenProps<
+  MainStackParamList,
+  routeNames.AddItems
 >;

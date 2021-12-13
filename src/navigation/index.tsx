@@ -21,8 +21,8 @@ const RootNav = () => {
     } else if (isLoggedIn) {
       return (
         <>
-          <RootStack.Screen name={routeNames.AddItems} component={AddItems} />
           <RootStack.Screen name={routeNames.Home} component={Home} />
+          <RootStack.Screen name={routeNames.AddItems} component={AddItems} />
         </>
       );
     } else {

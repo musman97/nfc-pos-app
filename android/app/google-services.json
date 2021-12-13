@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "911844170707",
+    "project_id": "norsa-nv-7c153",
+    "storage_bucket": "norsa-nv-7c153.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911844170707:android:5fac7fc327a26455dc2d26",
+        "android_client_info": {
+          "package_name": "com.posprinter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911844170707-52l4si581u8gov04ucfdq295u5s8bh0c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMMtWnhe40pX3oo0MuCZ3RdVFhyY9Ozhk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911844170707-52l4si581u8gov04ucfdq295u5s8bh0c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

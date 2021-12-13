@@ -10,6 +10,8 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@react-native-firebase/app": "^13.1.0",
+    "@react-native-firebase/crashlytics": "^13.1.0",
     "@react-native-masked-view/masked-view": "^0.2.6",
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/stack": "^6.0.11",

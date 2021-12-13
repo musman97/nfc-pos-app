@@ -14,8 +14,8 @@ const useAuthContext: () => AuthContextValue = () => {
 };
 
 const Provider: FC<EmptyProps> = ({children}) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   return (
     <AuthContext.Provider

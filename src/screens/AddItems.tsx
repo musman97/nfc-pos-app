@@ -14,19 +14,21 @@ import {
 } from 'react-native-responsive-dimensions';
 import {KeyboardAwareFlatList as FlatList} from 'react-native-keyboard-aware-scroll-view';
 import {Button, Header, Icons} from '~/components';
-import {Item} from '~/types';
+import {AddItemsScreeProps, Item} from '~/types';
 import {flatListKeyExtractor, isValidNumber, showAlert} from '~/utils';
 import {Colors} from '~/styles';
+import {printReceipt} from '~/core/ReceiptPrinter';
 
-export interface Props {}
+export interface Props extends AddItemsScreeProps {}
 
-const AddItems: FC<Props> = ({}) => {
+const AddItems: FC<Props> = ({route}) => {
   const [items, setItems] = useState<Array<Item>>([]);
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [balance, setBalance] = useState(1000);
-
   const [totalPrice, setTotalPrice] = useState(0);
+
+  const code = route.params?.code ?? '12345678';
 
   useMemo(() => {
     if (items.length) {
@@ -35,10 +37,19 @@ const AddItems: FC<Props> = ({}) => {
         .reduce((prev, curr) => prev + curr, 0);
 
       setTotalPrice(totalPrice);
+    } else {
+      setTotalPrice(0);
     }
   }, [items]);
 
   const itemPriceInputRef = useRef<TextInput>();
+
+  const clearAllStates = useCallback(() => {
+    setItems([]);
+    setItemName('');
+    setItemPrice('');
+    setBalance(1000);
+  }, []);
 
   const onItemNameEndEditingPressed = useCallback(() => {
     itemPriceInputRef.current.focus();
@@ -93,7 +104,23 @@ const AddItems: FC<Props> = ({}) => {
     [items],
   );
 
-  const onSaveAndPrintReceiptPressed = useCallback(async () => {}, [items]);
+  const onSaveAndPrintReceiptPressed = useCallback(async () => {
+    if (totalPrice === 0) {
+      showAlert('No Items', 'There are no items added to be printed');
+      return;
+    }
+
+    try {
+      await printReceipt(items, {
+        name: 'John Doe',
+        code: code,
+      });
+      clearAllStates();
+    } catch (error) {
+      console.log('Error printing Receipt: ', error);
+      showAlert('Error Printing', error?.message || 'Something went wrong');
+    }
+  }, [items, totalPrice]);
 
   const renderListItem: ListRenderItem<Item> = ({
     item: {name, price},
@@ -147,7 +174,7 @@ const AddItems: FC<Props> = ({}) => {
                     <Text style={styles.clientInfoLabelText}>Code</Text>
                   </View>
                   <View style={styles.clientInfoRightColumn}>
-                    <Text style={styles.clientInfoValueText}>12345678</Text>
+                    <Text style={styles.clientInfoValueText}>{code}</Text>
                   </View>
                 </View>
                 <View

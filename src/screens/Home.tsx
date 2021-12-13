@@ -172,8 +172,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
   const onPinCodeSubmitPressed = useCallback(() => {
     hideBottomModal();
-    navigate(routeNames.AddItems);
-  }, []);
+    navigate(routeNames.AddItems, {
+      code: cardNumber,
+    });
+  }, [cardNumber]);
 
   const renderNfcScanning = useCallback(() => {
     return (

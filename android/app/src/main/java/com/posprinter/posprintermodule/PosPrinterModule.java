@@ -23,6 +23,8 @@ import com.posprinter.R;
 
 import java.util.Objects;
 
+import io.invertase.firebase.crashlytics.ReactNativeFirebaseCrashlyticsNativeHelper;
+
 public class PosPrinterModule extends ReactContextBaseJavaModule {
     public PosPrinterModule(@Nullable ReactApplicationContext reactContext) {
         super(reactContext);
@@ -39,11 +41,12 @@ public class PosPrinterModule extends ReactContextBaseJavaModule {
 
                 printer
                         .printFormattedText(
-                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.mipmap.ic_launcher, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
-                                       textToBePrinted
+                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.drawable.src_assets_images_logo, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
+                                        textToBePrinted
                         );
                 promise.resolve(true);
             } catch (Exception e) {
+                ReactNativeFirebaseCrashlyticsNativeHelper.recordNativeException(e);
                 e.printStackTrace();
                 promise.reject("Exception", "Something went wrong " + e.getMessage());
             }
