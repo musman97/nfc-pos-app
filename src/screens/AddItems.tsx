@@ -27,6 +27,7 @@ const AddItems: FC<Props> = ({route}) => {
   const [itemPrice, setItemPrice] = useState('');
   const [balance, setBalance] = useState(1000);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [hasPrintedForMerchant, setHasPrintedForMerchant] = useState(false);
 
   const code = route.params?.code ?? '12345678';
 
@@ -49,6 +50,7 @@ const AddItems: FC<Props> = ({route}) => {
     setItemName('');
     setItemPrice('');
     setBalance(1000);
+    setHasPrintedForMerchant(false);
   }, []);
 
   const onItemNameEndEditingPressed = useCallback(() => {
@@ -115,12 +117,16 @@ const AddItems: FC<Props> = ({route}) => {
         name: 'John Doe',
         code: code,
       });
-      clearAllStates();
+      if (hasPrintedForMerchant) {
+        clearAllStates();
+      } else {
+        setHasPrintedForMerchant(true);
+      }
     } catch (error) {
       console.log('Error printing Receipt: ', error);
       showAlert('Error Printing', error?.message || 'Something went wrong');
     }
-  }, [items, totalPrice]);
+  }, [items, totalPrice, hasPrintedForMerchant]);
 
   const renderListItem: ListRenderItem<Item> = ({
     item: {name, price},
@@ -227,7 +233,11 @@ const AddItems: FC<Props> = ({route}) => {
           </View>
         </View>
         <Button
-          title="Save and Print Receipt"
+          title={
+            !hasPrintedForMerchant
+              ? 'Save and Print Receipt'
+              : 'Print for Client'
+          }
           style={styles.saveBtn}
           onPress={onSaveAndPrintReceiptPressed}
         />
