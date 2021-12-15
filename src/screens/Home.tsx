@@ -293,12 +293,12 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             loading={loading}
             onPress={onScanNfcPressed}
           />
-          <Button
+          {/* <Button
             title="Write NFC card"
             style={styles.scanNfcBtn}
             loading={writeNfcTagLoading}
             onPress={onWriteNfcPressed}
-          />
+          /> */}
         </View>
       </View>
       <BottomModal visible={bottomModalShown}>
