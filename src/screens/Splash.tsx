@@ -11,13 +11,13 @@ import {useAuthContext} from '~/context/AuthContext';
 import {logo} from '~/assets/images';
 
 const Splash: FC<EmptyProps> = () => {
-  const {setIsLoading} = useAuthContext();
+  const {checkUserSession} = useAuthContext();
 
   useEffect(() => {
     const tId = setTimeout(() => {
-      setIsLoading(false);
+      checkUserSession();
       clearTimeout(tId);
-    }, 3000);
+    }, 500);
   }, []);
 
   return (

@@ -1,4 +1,3 @@
-import {Dispatch, SetStateAction} from 'react';
 import {StackNavigationProp, StackScreenProps} from '@react-navigation/stack';
 import {routeNames} from '~/navigation/routeNames';
 
@@ -39,14 +38,50 @@ export type Customer = {
   code: string;
 };
 
+// Api Requests and Responses
+
+export type LoginData = {
+  id: string;
+  accessToken?: string;
+  refreshToken?: string;
+  dormantUser?: number;
+  isAdmin?: number;
+};
+
+export type LoginApiRequest = {
+  email: string;
+  password: string;
+};
+
+export type LoginApiResponse = {
+  result?: string;
+  message?: string;
+  data?: LoginData;
+};
+
+export type LoginSuccessResponse = {
+  data?: LoginData;
+};
+
+export type LoginFailureResponse = {
+  message?: string;
+};
+
+export type LoginResponse = LoginSuccessResponse & LoginFailureResponse;
+
 // Context
 
-export interface AuthContextValue {
+export type AuthContext = {
   isLoading: boolean;
   isLoggedIn: boolean;
-  setIsLoading: Dispatch<SetStateAction<boolean>>;
-  setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
-}
+  loginData: LoginData | null;
+  login: (email: string, password: string) => Promise<LoginResponse>;
+  logout: () => Promise<void>;
+  onLoginSuccess: (data: LoginData) => void;
+  checkUserSession: () => Promise<void>;
+};
+
+export type AuthContextValue = AuthContext | undefined;
 
 // Navigation
 

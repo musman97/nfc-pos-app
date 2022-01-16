@@ -1,5 +1,5 @@
 import React, {FC, useRef, useState, useCallback} from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {Image, Keyboard, StyleSheet, View} from 'react-native';
 import {TextInput} from 'react-native-gesture-handler';
 import {
   responsiveFontSize,
@@ -10,25 +10,64 @@ import {logo} from '~/assets/images';
 import {Button, ScreenContainer} from '~/components';
 import {Colors} from '~/styles';
 import {useAuthContext} from '~/context/AuthContext';
+import {isEmailValid, showAlert} from '~/utils';
 
 export interface Props {}
 
 const Login: FC<Props> = ({}) => {
-  const {setIsLoggedIn} = useAuthContext();
+  const {login, onLoginSuccess} = useAuthContext();
+
   const passwordTextInpurRef = useRef<TextInput>();
 
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
+  const onEmailTextChange = useCallback((text: string) => setEmail(text), []);
+  const onPasswordTextChange = useCallback(
+    (text: string) => setPassword(text),
+    [],
+  );
   const onUsernameEndEditing = useCallback(() => {
     passwordTextInpurRef.current.focus();
   }, []);
-  const onLoginPressed = useCallback(() => {
+  const onLoginPressed = useCallback(async () => {
+    Keyboard.dismiss();
+
+    const _email = email.trim();
+    const _password = password.trim();
+
+    if (_email === '') {
+      showAlert('Email Empty', 'Please enter an email.');
+      return;
+    }
+
+    if (!isEmailValid(_email)) {
+      showAlert('Invalid Email', 'The email entered is invalid.');
+      return;
+    }
+
+    if (_password === '') {
+      showAlert('Password Empty', 'Please enter a password.');
+      return;
+    }
+
+    if (_password.length < 8) {
+      showAlert('Invalid Password', 'The password must be 8 characters long.');
+      return;
+    }
+
     setLoading(true);
-    const tId = setTimeout(() => {
-      clearTimeout(tId);
-      setIsLoggedIn(true);
-    }, 3000);
-  }, []);
+    const loginResponse = await login(_email, _password);
+    console.log(loginResponse);
+
+    if (loginResponse.data) {
+      onLoginSuccess(loginResponse.data);
+    } else {
+      setLoading(false);
+      showAlert('Error', loginResponse.message);
+    }
+  }, [email, password]);
 
   return (
     <ScreenContainer style={styles.container}>
@@ -36,16 +75,21 @@ const Login: FC<Props> = ({}) => {
         <Image source={logo} style={styles.logo} />
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          value={email}
+          placeholder="Email"
           onEndEditing={onUsernameEndEditing}
+          onChangeText={onEmailTextChange}
+          keyboardType="email-address"
           returnKeyType="next"
         />
         <View style={styles.inputsSeprator} />
         <TextInput
           ref={passwordTextInpurRef}
           style={styles.input}
+          value={password}
           placeholder="Password"
           secureTextEntry
+          onChangeText={onPasswordTextChange}
           returnKeyType="done"
         />
         <Button
