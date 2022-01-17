@@ -63,11 +63,66 @@ export type LoginSuccessResponse = {
   data?: LoginData;
 };
 
-export type LoginFailureResponse = {
+export type GeneralFailureResponse = {
   message?: string;
 };
 
-export type LoginResponse = LoginSuccessResponse & LoginFailureResponse;
+export type LoginResponse = LoginSuccessResponse & GeneralFailureResponse;
+
+export type IssuanceHistory = {
+  id: string;
+  Client_id: string;
+  Pincode: string;
+  DateTime: string;
+  Amount: string;
+  AmountPaid: string;
+  TypeOfReturnPayment: string;
+  DateDeposit: string;
+  NfcCard_id: string;
+};
+
+export type GetIssuanceHistoryApiResponse = Array<IssuanceHistory>;
+
+export type GetIssuanceHistorySuccessResponse = {
+  data?: IssuanceHistory;
+};
+
+export type GetIssuanceHistoryResponse = GetIssuanceHistorySuccessResponse &
+  GeneralFailureResponse;
+
+export type Client = {
+  id: string;
+  Code: string;
+  Date: string;
+  ExpiryDate: string;
+  FirstName: string;
+  LastName: string;
+  idCard: string;
+  Status: number;
+  ChildrenCount: number;
+  Email: string;
+  ContactNo: string;
+  WorkNo: string;
+  WorksAt: string;
+  FaxNumber: string;
+  Partner?: object;
+  Housing: number;
+  NameOfPartner?: string;
+  address: string;
+  MaxBorrowAmount: number;
+  Dealer_id: string;
+  SourceOfIncome: string;
+  RecievedCreditInPast: number;
+};
+
+export type GetClientApiResponse = Client | null;
+
+export type GetClientSuccessResponse = {
+  data?: IssuanceHistory;
+};
+
+export type GetClientResponse = GetClientSuccessResponse &
+  GeneralFailureResponse;
 
 // Context
 

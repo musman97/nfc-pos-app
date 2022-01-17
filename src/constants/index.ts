@@ -4,6 +4,12 @@ export const authEndpoints = {
   login: 'auth/login',
 };
 
+export const mainEndpoints = {
+  getIssuanceHistory: (pincode: string, cardId: string) =>
+    `issuancehistory/getissuancehistoryByPincodeAndNfcCard_id/${pincode}&${cardId}`,
+  getClient: (clientId: string) => `clients/getClientById/${clientId}`,
+};
+
 export const asyncStorageKeys = {
   loginData: 'KEY_LOGIN_DATA',
 };

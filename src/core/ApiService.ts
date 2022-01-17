@@ -1,7 +1,14 @@
-import Axios, {AxiosResponse} from 'axios';
-import {authEndpoints, BASE_URL} from '~/constants';
-import {LoginApiRequest, LoginApiResponse, LoginResponse} from '~/types';
-import {AxiosError} from '../../node_modules/axios/index.d';
+import Axios, {AxiosError, AxiosInstance, AxiosResponse} from 'axios';
+import {authEndpoints, BASE_URL, mainEndpoints} from '~/constants';
+import {
+  GetClientResponse,
+  GetIssuanceHistoryApiResponse,
+  GetIssuanceHistoryResponse,
+  LoginApiRequest,
+  LoginApiResponse,
+  LoginResponse,
+} from '~/types';
+import {getAuthToken} from './LocalStorageService';
 
 const axios = Axios.create({
   baseURL: BASE_URL,
@@ -11,6 +18,18 @@ const axios = Axios.create({
   },
   timeout: 15000,
 });
+
+const getAxiosInstanceWithAuthHeader: () => Promise<AxiosInstance> =
+  async () => {
+    const authToken = getAuthToken();
+
+    axios.defaults.headers.common = {
+      ...axios.defaults.headers.common,
+      Authorization: `Bearer ${authToken}`,
+    };
+
+    return axios;
+  };
 
 export const doLogin = async (
   email: string,
@@ -47,5 +66,46 @@ export const doLogin = async (
         message: error?.message ?? 'Something went wrong',
       };
     }
+  }
+};
+
+export const doGetIssuanceHistory: (
+  pincode: string,
+  cardId: string,
+) => Promise<GetIssuanceHistoryResponse> = async (pincode, cardId) => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader();
+
+    const response = await axios.get<
+      GetIssuanceHistoryApiResponse,
+      AxiosResponse<GetIssuanceHistoryApiResponse>
+    >(mainEndpoints.getIssuanceHistory(pincode, cardId));
+
+    return {
+      data: response.data[0],
+    };
+  } catch (error) {
+    console.log('Error Getting Issuance Histroy: ', error);
+
+    return {
+      message: 'Something went wrong',
+    };
+  }
+};
+
+export const doGetClient: (
+  clientId: string,
+) => Promise<GetClientResponse> = async clientId => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader()
+
+    const response = 
+
+  } catch (error) {
+    console.log('Error Getting Client: ', error);
+
+    return {
+      message: 'Something went wrong',
+    };
   }
 };

@@ -20,6 +20,12 @@ export const getLoginData: () => Promise<LoginData | null> = async () => {
   }
 };
 
+export const getAuthToken: () => Promise<string> = async () => {
+  const loginData = await getLoginData();
+
+  return loginData.accessToken ?? '';
+};
+
 export const setLoginData: (
   loginData: LoginData,
 ) => Promise<void> = async loginData => {
