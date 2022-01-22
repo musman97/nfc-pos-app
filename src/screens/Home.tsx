@@ -1,12 +1,13 @@
-import React, {FC, useState, useCallback, useEffect} from 'react';
+import React, {FC, useCallback, useEffect, useState} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
-  TextInput,
   Alert,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import {
   responsiveFontSize,
@@ -15,6 +16,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import {Button, Header, Icons, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
+import {doGetClient, doGetIssuanceHistory} from '~/core/ApiService';
 import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
@@ -27,6 +29,7 @@ import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
 import {HomeScreenNavProp, NfcTagOperationStatus} from '~/types';
 import {showToast} from '~/utils';
+import {isValidIntNumber} from '../utils/index';
 
 export interface Props {
   navigation: HomeScreenNavProp;
@@ -45,6 +48,8 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [error, setError] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardNumberToBeWritten, setCardNumberToBeWritten] = useState('');
+  const [pinCode, setPinCode] = useState('');
+  const [getClientLoading, setGetClientLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -170,12 +175,45 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setWriteNfcTagStatus('none');
   }, []);
 
-  const onPinCodeSubmitPressed = useCallback(() => {
-    hideBottomModal();
-    navigate(routeNames.AddItems, {
-      code: cardNumber,
-    });
-  }, [cardNumber]);
+  const onPinCodeTextChange = useCallback(
+    (text: string) => setPinCode(text),
+    [],
+  );
+
+  const onPinCodeSubmitPressed = useCallback(async () => {
+    const _pinCode = pinCode.trim();
+
+    if (_pinCode === '') {
+      showToast('Enter pincode');
+      return;
+    }
+
+    Keyboard.dismiss();
+    setGetClientLoading(true);
+    const issuanceHistoryRes = await doGetIssuanceHistory(pinCode, cardNumber);
+
+    if (issuanceHistoryRes.data) {
+      const clientRes = await doGetClient(issuanceHistoryRes.data.Client_id);
+
+      if (clientRes.data) {
+        setGetClientLoading(false);
+        hideBottomModal();
+
+        setPinCode('');
+        navigate(routeNames.PrintExpense, {
+          client: clientRes.data,
+          balance: parseFloat(issuanceHistoryRes.data.Amount),
+          cardId: cardNumber,
+        });
+      } else {
+        setGetClientLoading(false);
+        showToast(clientRes.message);
+      }
+    } else {
+      setGetClientLoading(false);
+      showToast(issuanceHistoryRes.message);
+    }
+  }, [pinCode, cardNumber]);
 
   const renderNfcScanning = useCallback(() => {
     return (
@@ -241,17 +279,20 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
         <Text style={styles.scanningNfcText}>Enter PIN Code</Text>
         <TextInput
           style={styles.input}
+          value={pinCode}
+          onChangeText={onPinCodeTextChange}
           placeholder="PIN Code"
           keyboardType="numeric"
         />
         <Button
           title="Submit"
+          loading={getClientLoading}
           onPress={onPinCodeSubmitPressed}
           style={styles.submitPinCodeBtn}
         />
       </View>
     );
-  }, [cardNumber]);
+  }, [cardNumber, pinCode, getClientLoading]);
 
   const renderModalContent = useCallback(() => {
     if (scanningStatus === 'scanning') {
@@ -261,7 +302,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     } else {
       return renderTryAgain();
     }
-  }, [scanningStatus]);
+  }, [scanningStatus, pinCode, getClientLoading]);
 
   const renderWriteNfcModalContent = useCallback(() => {
     if (writeNfcTagStatus === 'none') {

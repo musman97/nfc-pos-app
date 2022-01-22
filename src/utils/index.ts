@@ -1,6 +1,7 @@
 import {Alert, ToastAndroid} from 'react-native';
 
-const numberRegex = /^([0-9]+)|([0-9]+.?[0-9]+)$/g;
+const floatNumberRegex = /^([0-9]+)|([0-9]+.?[0-9]+)$/g;
+const intNumberRegex = /^[0-9]+$/g;
 const emailRegex =
   /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
@@ -18,8 +19,11 @@ export const flatListKeyExtractor: (item: any, index: number) => string = (
   idx,
 ) => `${idx}-${Math.random()}`;
 
-export const isValidNumber: (value: string) => boolean = value =>
-  numberRegex.test(value);
+export const isValidFloatNumber: (value: string) => boolean = value =>
+  floatNumberRegex.test(value);
+
+export const isValidIntNumber: (value: string) => boolean = value =>
+  intNumberRegex.test(value);
 
 export const isEmailValid: (email: string) => boolean = email =>
   emailRegex.test(email);

@@ -118,7 +118,7 @@ export type Client = {
 export type GetClientApiResponse = Client | null;
 
 export type GetClientSuccessResponse = {
-  data?: IssuanceHistory;
+  data?: Client;
 };
 
 export type GetClientResponse = GetClientSuccessResponse &
@@ -150,8 +150,10 @@ export type AuthStackParamList = {
 
 export type MainStackParamList = {
   [routeNames.Home]: undefined;
-  [routeNames.AddItems]: {
-    code: string;
+  [routeNames.PrintExpense]: {
+    client: Client;
+    balance: number;
+    cardId: string;
   };
 };
 
@@ -166,5 +168,5 @@ export type HomeScreenNavProp = StackNavigationProp<
 
 export type AddItemsScreeProps = StackScreenProps<
   MainStackParamList,
-  routeNames.AddItems
+  routeNames.PrintExpense
 >;

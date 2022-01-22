@@ -1,6 +1,7 @@
 import Axios, {AxiosError, AxiosInstance, AxiosResponse} from 'axios';
 import {authEndpoints, BASE_URL, mainEndpoints} from '~/constants';
 import {
+  GetClientApiResponse,
   GetClientResponse,
   GetIssuanceHistoryApiResponse,
   GetIssuanceHistoryResponse,
@@ -21,14 +22,19 @@ const axios = Axios.create({
 
 const getAxiosInstanceWithAuthHeader: () => Promise<AxiosInstance> =
   async () => {
-    const authToken = getAuthToken();
+    const authToken = await getAuthToken();
 
-    axios.defaults.headers.common = {
-      ...axios.defaults.headers.common,
-      Authorization: `Bearer ${authToken}`,
-    };
+    const _axios = Axios.create({
+      baseURL: BASE_URL,
+      headers: {
+        'Content-Type': ' application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      timeout: 15000,
+    });
 
-    return axios;
+    return _axios;
   };
 
 export const doLogin = async (
@@ -97,10 +103,16 @@ export const doGetClient: (
   clientId: string,
 ) => Promise<GetClientResponse> = async clientId => {
   try {
-    const axios = await getAxiosInstanceWithAuthHeader()
+    const axios = await getAxiosInstanceWithAuthHeader();
 
-    const response = 
+    const response = await axios.get<
+      GetClientApiResponse,
+      AxiosResponse<GetClientApiResponse>
+    >(mainEndpoints.getClient(clientId));
 
+    return {
+      data: response.data,
+    };
   } catch (error) {
     console.log('Error Getting Client: ', error);
 

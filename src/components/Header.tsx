@@ -47,13 +47,15 @@ const Header: FC<Props> = ({style, hasBackButton, title, hasLogoutButton}) => {
         ) : null}
         <Text style={styles.titleText}>{title}</Text>
       </View>
-      <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-        <Icons.MaterialIcons
-          name="logout"
-          size={responsiveFontSize(4)}
-          color={Colors.white}
-        />
-      </TouchableOpacity>
+      {hasLogoutButton ? (
+        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+          <Icons.MaterialIcons
+            name="logout"
+            size={responsiveFontSize(4)}
+            color={Colors.white}
+          />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };

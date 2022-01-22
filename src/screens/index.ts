@@ -1,6 +1,6 @@
 import Home from './Home';
 import Splash from './Splash';
 import Login from './Login';
-import AddItems from './AddItems';
+import PrintExpense from './PrintExpense';
 
-export {Home, Splash, Login, AddItems};
+export {Home, Splash, Login, PrintExpense};
