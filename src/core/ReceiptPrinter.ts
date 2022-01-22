@@ -10,7 +10,7 @@ export const printReceipt: (
     "[C]<u><font size='big'>Norsa N.V</font></u>\n" +
     '[L]\n' +
     `[C]Receipt N.O: ${(Math.random() * 1000).toFixed(0)}\n` +
-    `[C]${moment().format('DD MMM, YYYY HH:mm:ss')}\n` +
+    `[C]${moment().format('DD MMM, YYYY hh:mm:ss A')}\n` +
     `[L]\n` +
     '[C]================================\n' +
     '[L]\n' +

@@ -1,6 +1,8 @@
 import Axios, {AxiosError, AxiosInstance, AxiosResponse} from 'axios';
 import {authEndpoints, BASE_URL, mainEndpoints} from '~/constants';
 import {
+  CreateTransactionHistoryApiResponse,
+  CreateTransactionHistoryResponse,
   GetClientApiResponse,
   GetClientResponse,
   GetIssuanceHistoryApiResponse,
@@ -8,6 +10,7 @@ import {
   LoginApiRequest,
   LoginApiResponse,
   LoginResponse,
+  Transaction,
 } from '~/types';
 import {getAuthToken} from './LocalStorageService';
 
@@ -87,9 +90,15 @@ export const doGetIssuanceHistory: (
       AxiosResponse<GetIssuanceHistoryApiResponse>
     >(mainEndpoints.getIssuanceHistory(pincode, cardId));
 
-    return {
-      data: response.data[0],
-    };
+    if (response.data.length === 0) {
+      return {
+        message: 'Please enter valid pin code',
+      };
+    } else {
+      return {
+        data: response.data[0],
+      };
+    }
   } catch (error) {
     console.log('Error Getting Issuance Histroy: ', error);
 
@@ -117,6 +126,32 @@ export const doGetClient: (
     console.log('Error Getting Client: ', error);
 
     return {
+      message: 'Something went wrong',
+    };
+  }
+};
+
+export const doCreateTrasactionHistory: (
+  transaction: Transaction,
+) => Promise<CreateTransactionHistoryResponse> = async transaction => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader();
+
+    const apiResponse = await axios.post<
+      CreateTransactionHistoryApiResponse,
+      AxiosResponse<CreateTransactionHistoryApiResponse, Transaction>,
+      Transaction
+    >(mainEndpoints.createTransactionHistory, transaction);
+
+    return {
+      success: true,
+      message: apiResponse.data.message,
+    };
+  } catch (error) {
+    console.log('Error creating transaction history', error);
+
+    return {
+      success: false,
       message: 'Something went wrong',
     };
   }

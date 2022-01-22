@@ -124,6 +124,23 @@ export type GetClientSuccessResponse = {
 export type GetClientResponse = GetClientSuccessResponse &
   GeneralFailureResponse;
 
+export type CreateTransactionHistoryApiResponse = {
+  message?: string;
+};
+
+export type Transaction = {
+  Client_id: string;
+  Merchant_ID: 'prefix-962';
+  ItemDescription: 'Expense';
+  dateTime: string;
+  AmountUser: number;
+};
+
+export type CreateTransactionHistoryResponse = {
+  success: boolean;
+  message?: string;
+};
+
 // Context
 
 export type AuthContext = {

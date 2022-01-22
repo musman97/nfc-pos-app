@@ -192,26 +192,29 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setGetClientLoading(true);
     const issuanceHistoryRes = await doGetIssuanceHistory(pinCode, cardNumber);
 
-    if (issuanceHistoryRes.data) {
-      const clientRes = await doGetClient(issuanceHistoryRes.data.Client_id);
+    console.log(issuanceHistoryRes);
 
-      if (clientRes.data) {
+    if (issuanceHistoryRes?.data) {
+      const clientRes = await doGetClient(issuanceHistoryRes?.data?.Client_id);
+
+      if (clientRes?.data) {
         setGetClientLoading(false);
         hideBottomModal();
 
         setPinCode('');
         navigate(routeNames.PrintExpense, {
-          client: clientRes.data,
-          balance: parseFloat(issuanceHistoryRes.data.Amount),
+          client: clientRes?.data,
+          balance: parseFloat(issuanceHistoryRes?.data?.Amount),
           cardId: cardNumber,
         });
       } else {
         setGetClientLoading(false);
-        showToast(clientRes.message);
+        showToast(clientRes?.message);
       }
     } else {
+      console.log('here');
       setGetClientLoading(false);
-      showToast(issuanceHistoryRes.message);
+      showToast(issuanceHistoryRes?.message);
     }
   }, [pinCode, cardNumber]);
 
@@ -318,7 +321,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
   return (
     <ScreenContainer>
-      <Header title="Home" />
+      <Header title="Home" hasLogoutButton />
       <View style={styles.f1}>
         <View style={styles.contentContainer}>
           <View style={styles.nfcIconWrapper}>

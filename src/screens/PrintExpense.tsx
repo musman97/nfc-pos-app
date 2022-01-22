@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React, {FC, useCallback, useState} from 'react';
 import {Keyboard, StyleSheet, Text, TextInput, View} from 'react-native';
 import {
@@ -6,16 +7,19 @@ import {
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
 import {Button, Header} from '~/components';
+import {doCreateTrasactionHistory} from '~/core/ApiService';
 import {printReceipt} from '~/core/ReceiptPrinter';
 import {Colors} from '~/styles';
 import {AddItemsScreeProps} from '~/types';
-import {showAlert} from '~/utils';
+import {showAlert, showToast} from '~/utils';
 
 export interface Props extends AddItemsScreeProps {}
 
-const PrintExpense: FC<Props> = ({route}) => {
+const PrintExpense: FC<Props> = ({route, navigation}) => {
   const [expensePrice, setExpensePrice] = useState('');
   const [hasPrintedForMerchant, setHasPrintedForMerchant] = useState(false);
+  const [disableInput, setDisableInput] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const cardId = route.params?.cardId;
   const client = route.params?.client;
@@ -24,6 +28,8 @@ const PrintExpense: FC<Props> = ({route}) => {
   const clearAllStates = useCallback(() => {
     setExpensePrice('');
     setHasPrintedForMerchant(false);
+    setDisableInput(false);
+    setLoading(false);
   }, []);
 
   const onExpensePriceTextChanged = useCallback<(text: string) => void>(
@@ -58,17 +64,42 @@ const PrintExpense: FC<Props> = ({route}) => {
     }
 
     try {
-      await printReceipt(price, client);
       if (hasPrintedForMerchant) {
-        clearAllStates();
+        setLoading(true);
+
+        await printReceipt(price, client);
+
+        const tId = setTimeout(() => {
+          clearTimeout(tId);
+          clearAllStates();
+          navigation.goBack();
+        }, 1000);
       } else {
-        setHasPrintedForMerchant(true);
+        setDisableInput(true);
+        setLoading(true);
+
+        const res = await doCreateTrasactionHistory({
+          Client_id: client.id,
+          ItemDescription: 'Expense',
+          Merchant_ID: 'prefix-962',
+          dateTime: moment().utc().toDate().toUTCString(),
+          AmountUser: price,
+        });
+
+        if (res.success) {
+          await printReceipt(price, client);
+          setHasPrintedForMerchant(true);
+          setLoading(false);
+        } else {
+          showToast(res.message);
+          setDisableInput(false);
+        }
       }
     } catch (error) {
       console.log('Error printing Receipt: ', error);
       showAlert('Error Printing', error?.message || 'Something went wrong');
     }
-  }, [expensePrice]);
+  }, [expensePrice, hasPrintedForMerchant]);
 
   return (
     <View style={styles.f1}>
@@ -95,6 +126,7 @@ const PrintExpense: FC<Props> = ({route}) => {
             </View>
           </View>
           <TextInput
+            editable={!disableInput}
             style={styles.input}
             value={expensePrice}
             placeholder="Expense Amount"
@@ -111,6 +143,7 @@ const PrintExpense: FC<Props> = ({route}) => {
               : 'Print for Client'
           }
           style={styles.saveBtn}
+          loading={loading}
           onPress={onSaveAndPrintReceiptPressed}
         />
       </View>
