@@ -16,7 +16,12 @@ import {
 } from 'react-native-responsive-dimensions';
 import {Button, Header, Icons, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
-import {doGetClient, doGetIssuanceHistory} from '~/core/ApiService';
+import {useAuthContext} from '~/context/AuthContext';
+import {
+  doGetClient,
+  doGetIssuanceHistory,
+  doGetMerchantId,
+} from '~/core/ApiService';
 import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
@@ -29,13 +34,14 @@ import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
 import {HomeScreenNavProp, NfcTagOperationStatus} from '~/types';
 import {showToast} from '~/utils';
-import {isValidIntNumber} from '../utils/index';
 
 export interface Props {
   navigation: HomeScreenNavProp;
 }
 
 const Home: FC<Props> = ({navigation: {navigate}}) => {
+  const {loginData} = useAuthContext();
+
   const [loading, setLoading] = useState(false);
   const [writeNfcTagLoading, setWriteNfcTagLoading] = useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
@@ -192,27 +198,33 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setGetClientLoading(true);
     const issuanceHistoryRes = await doGetIssuanceHistory(pinCode, cardNumber);
 
-    console.log(issuanceHistoryRes);
-
     if (issuanceHistoryRes?.data) {
       const clientRes = await doGetClient(issuanceHistoryRes?.data?.Client_id);
 
       if (clientRes?.data) {
         setGetClientLoading(false);
-        hideBottomModal();
 
-        setPinCode('');
-        navigate(routeNames.PrintExpense, {
-          client: clientRes?.data,
-          balance: parseFloat(issuanceHistoryRes?.data?.Amount),
-          cardId: cardNumber,
-        });
+        const merchantIdRespose = await doGetMerchantId(loginData?.id);
+
+        if (merchantIdRespose?.data) {
+          hideBottomModal();
+          setPinCode('');
+          navigate(routeNames.PrintExpense, {
+            client: clientRes?.data,
+            balance: parseFloat(issuanceHistoryRes?.data?.Amount),
+            cardId: cardNumber,
+            merchantId: merchantIdRespose?.data,
+            issuanceHistoryId: issuanceHistoryRes?.data?.id,
+          });
+        } else {
+          setGetClientLoading(false);
+          showToast(merchantIdRespose?.message);
+        }
       } else {
         setGetClientLoading(false);
         showToast(clientRes?.message);
       }
     } else {
-      console.log('here');
       setGetClientLoading(false);
       showToast(issuanceHistoryRes?.message);
     }

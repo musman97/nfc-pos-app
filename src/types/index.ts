@@ -41,7 +41,7 @@ export type Customer = {
 // Api Requests and Responses
 
 export type LoginData = {
-  id: string;
+  id?: string;
   accessToken?: string;
   refreshToken?: string;
   dormantUser?: number;
@@ -130,7 +130,8 @@ export type CreateTransactionHistoryApiResponse = {
 
 export type Transaction = {
   Client_id: string;
-  Merchant_ID: 'prefix-962';
+  Merchant_ID: string;
+  IssuanceHistoryId: string;
   ItemDescription: 'Expense';
   dateTime: string;
   AmountUser: number;
@@ -140,6 +141,22 @@ export type CreateTransactionHistoryResponse = {
   success: boolean;
   message?: string;
 };
+
+export type MerchantId = {
+  id?: string;
+};
+
+export type GetMerchantIdApiResponse = {
+  success?: string;
+  data?: Array<MerchantId>;
+};
+
+export type GetMerchantIdSuccessResponse = {
+  data?: string;
+};
+
+export type GetMerchantIdResponse = GetMerchantIdSuccessResponse &
+  GeneralFailureResponse;
 
 // Context
 
@@ -171,6 +188,8 @@ export type MainStackParamList = {
     client: Client;
     balance: number;
     cardId: string;
+    merchantId: string;
+    issuanceHistoryId: string;
   };
 };
 

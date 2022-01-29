@@ -7,6 +7,8 @@ import {
   GetClientResponse,
   GetIssuanceHistoryApiResponse,
   GetIssuanceHistoryResponse,
+  GetMerchantIdApiResponse,
+  GetMerchantIdResponse,
   LoginApiRequest,
   LoginApiResponse,
   LoginResponse,
@@ -124,6 +126,35 @@ export const doGetClient: (
     };
   } catch (error) {
     console.log('Error Getting Client: ', error);
+
+    return {
+      message: 'Something went wrong',
+    };
+  }
+};
+
+export const doGetMerchantId: (
+  userId: string,
+) => Promise<GetMerchantIdResponse> = async userId => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader();
+
+    const response = await axios.get<
+      GetMerchantIdApiResponse,
+      AxiosResponse<GetMerchantIdApiResponse>
+    >(mainEndpoints.getMerchantId(userId));
+
+    if (response.data?.data?.length > 0) {
+      return {
+        data: response.data.data[0]?.id,
+      };
+    } else {
+      return {
+        message: 'Something went wrong',
+      };
+    }
+  } catch (error) {
+    console.log('Error getting merchant id', error);
 
     return {
       message: 'Something went wrong',

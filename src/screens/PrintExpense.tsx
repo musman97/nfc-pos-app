@@ -21,9 +21,10 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   const [disableInput, setDisableInput] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const cardId = route.params?.cardId;
   const client = route.params?.client;
   const balance = route.params?.balance;
+  const merchantId = route.params?.merchantId;
+  const issuanceHistoryId = route.params?.issuanceHistoryId;
 
   const clearAllStates = useCallback(() => {
     setExpensePrice('');
@@ -81,7 +82,8 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
         const res = await doCreateTrasactionHistory({
           Client_id: client.id,
           ItemDescription: 'Expense',
-          Merchant_ID: 'prefix-962',
+          Merchant_ID: merchantId,
+          IssuanceHistoryId: issuanceHistoryId,
           dateTime: moment().utc().toDate().toUTCString(),
           AmountUser: price,
         });

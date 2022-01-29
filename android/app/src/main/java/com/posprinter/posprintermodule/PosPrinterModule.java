@@ -15,10 +15,8 @@ import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnection
 import com.dantsu.escposprinter.textparser.PrinterTextParserImg;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.posprinter.MainActivity;
 import com.posprinter.R;
 
 import java.util.Objects;
@@ -41,7 +39,7 @@ public class PosPrinterModule extends ReactContextBaseJavaModule {
 
                 printer
                         .printFormattedText(
-                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.drawable.src_assets_images_logo, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
+                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.mipmap.ic_launcher_foreground, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
                                         textToBePrinted
                         );
                 promise.resolve(true);

@@ -9,6 +9,8 @@ export const mainEndpoints = {
     `issuancehistory/getissuancehistoryByPincodeAndNfcCard_id/${pincode}&${cardId}`,
   getClient: (clientId: string) => `clients/getClientById/${clientId}`,
   createTransactionHistory: 'transactionHistory/createTransactionHistory',
+  getMerchantId: (userId: string) =>
+    `auth/getMerchantIdForLoggedInUser/${userId}`,
 };
 
 export const asyncStorageKeys = {
