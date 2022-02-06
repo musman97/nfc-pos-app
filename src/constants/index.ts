@@ -5,8 +5,7 @@ export const authEndpoints = {
 };
 
 export const mainEndpoints = {
-  getIssuanceHistory: (pincode: string, cardId: string) =>
-    `issuancehistory/getissuancehistoryByPincodeAndNfcCard_id/${pincode}&${cardId}`,
+  getIssuanceHistory: 'issuancehistory/OnNfcAndPinCode',
   getClient: (clientId: string) => `clients/getClientById/${clientId}`,
   createTransactionHistory: 'transactionHistory/createTransactionHistory',
   getMerchantId: (userId: string) =>

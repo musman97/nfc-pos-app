@@ -70,18 +70,40 @@ export type GeneralFailureResponse = {
 export type LoginResponse = LoginSuccessResponse & GeneralFailureResponse;
 
 export type IssuanceHistory = {
-  id: string;
-  Client_id: string;
-  Pincode: string;
-  DateTime: string;
-  Amount: string;
-  AmountPaid: string;
-  TypeOfReturnPayment: string;
-  DateDeposit: string;
-  NfcCard_id: string;
+  id?: string;
+  Client_id?: string;
+  Pincode?: string;
+  DateTime?: string;
+  Amount?: string;
+  AmountPaid?: string;
+  Balance?: string;
+  clientCode?: string;
+  clientName?: string;
 };
 
-export type GetIssuanceHistoryApiResponse = Array<IssuanceHistory>;
+export type GetIssuanceHistoryApiRequest = {
+  pinCode: string;
+  nfcCardId: string;
+};
+
+export type GetIssuanceHistoryApiResponse = {
+  error?: string;
+  data?: {
+    data?: {
+      id?: string;
+      Client_id?: string;
+      Pincode?: string;
+      DateTime?: string;
+      Amount?: string;
+      AmountPaid?: string;
+      Balance?: string;
+    };
+    clientCodeAndFullName?: {
+      Code?: string;
+      FullName?: string;
+    };
+  };
+};
 
 export type GetIssuanceHistorySuccessResponse = {
   data?: IssuanceHistory;
@@ -92,27 +114,8 @@ export type GetIssuanceHistoryResponse = GetIssuanceHistorySuccessResponse &
 
 export type Client = {
   id: string;
-  Code: string;
-  Date: string;
-  ExpiryDate: string;
-  FirstName: string;
-  LastName: string;
-  idCard: string;
-  Status: number;
-  ChildrenCount: number;
-  Email: string;
-  ContactNo: string;
-  WorkNo: string;
-  WorksAt: string;
-  FaxNumber: string;
-  Partner?: object;
-  Housing: number;
-  NameOfPartner?: string;
-  address: string;
-  MaxBorrowAmount: number;
-  Dealer_id: string;
-  SourceOfIncome: string;
-  RecievedCreditInPast: number;
+  code: string;
+  name: string;
 };
 
 export type GetClientApiResponse = Client | null;
@@ -188,7 +191,7 @@ export type MainStackParamList = {
     client: Client;
     balance: number;
     cardId: string;
-    merchantId: string;
+    pinCode: string;
     issuanceHistoryId: string;
   };
 };

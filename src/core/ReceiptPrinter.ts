@@ -20,8 +20,8 @@ export const printReceipt: (
     "[L]<font size='tall'>Merchant :</font>\n" +
     '[L]Jake Gill\n' +
     "[L]<font size='tall'>Customer :</font>\n" +
-    `[L]${customer.FirstName} ${customer.LastName}\n` +
-    `[L]${customer.Code}\n` +
+    `[L]${customer.name}\n` +
+    `[L]${customer.code}\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
     `[L]For questions or inquiries call customer service : 767-1563`;

@@ -16,12 +16,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import {Button, Header, Icons, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
-import {useAuthContext} from '~/context/AuthContext';
-import {
-  doGetClient,
-  doGetIssuanceHistory,
-  doGetMerchantId,
-} from '~/core/ApiService';
+import {doGetIssuanceHistory} from '~/core/ApiService';
 import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
@@ -40,8 +35,6 @@ export interface Props {
 }
 
 const Home: FC<Props> = ({navigation: {navigate}}) => {
-  const {loginData} = useAuthContext();
-
   const [loading, setLoading] = useState(false);
   const [writeNfcTagLoading, setWriteNfcTagLoading] = useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
@@ -199,31 +192,17 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     const issuanceHistoryRes = await doGetIssuanceHistory(pinCode, cardNumber);
 
     if (issuanceHistoryRes?.data) {
-      const clientRes = await doGetClient(issuanceHistoryRes?.data?.Client_id);
-
-      if (clientRes?.data) {
-        setGetClientLoading(false);
-
-        const merchantIdRespose = await doGetMerchantId(loginData?.id);
-
-        if (merchantIdRespose?.data) {
-          hideBottomModal();
-          setPinCode('');
-          navigate(routeNames.PrintExpense, {
-            client: clientRes?.data,
-            balance: parseFloat(issuanceHistoryRes?.data?.Amount),
-            cardId: cardNumber,
-            merchantId: merchantIdRespose?.data,
-            issuanceHistoryId: issuanceHistoryRes?.data?.id,
-          });
-        } else {
-          setGetClientLoading(false);
-          showToast(merchantIdRespose?.message);
-        }
-      } else {
-        setGetClientLoading(false);
-        showToast(clientRes?.message);
-      }
+      navigate(routeNames.PrintExpense, {
+        client: {
+          id: issuanceHistoryRes.data.Client_id,
+          code: issuanceHistoryRes.data.clientCode,
+          name: issuanceHistoryRes.data.clientName,
+        },
+        balance: parseFloat(issuanceHistoryRes?.data?.Balance),
+        cardId: cardNumber,
+        pinCode,
+        issuanceHistoryId: issuanceHistoryRes?.data?.id,
+      });
     } else {
       setGetClientLoading(false);
       showToast(issuanceHistoryRes?.message);

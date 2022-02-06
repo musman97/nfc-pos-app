@@ -1,7 +1,7 @@
 import {Alert, ToastAndroid} from 'react-native';
 
-const floatNumberRegex = /^([0-9]+)|([0-9]+.?[0-9]+)$/g;
-const intNumberRegex = /^[0-9]+$/g;
+const floatNumberRegex = /^([0-9]+)|([0-9]+.?[0-9]+)$/;
+const intNumberRegex = /^[0-9]+$/;
 const emailRegex =
   /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 

@@ -14,7 +14,10 @@ const RootNav = () => {
   const renderScreens = () => {
     // return (
     //   <>
-    //     <RootStack.Screen name={routeNames.AddItems} component={AddItems} />
+    //     <RootStack.Screen
+    //       name={routeNames.PrintExpense}
+    //       component={PrintExpense}
+    //     />
     //   </>
     // );
 

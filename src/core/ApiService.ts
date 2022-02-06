@@ -5,10 +5,12 @@ import {
   CreateTransactionHistoryResponse,
   GetClientApiResponse,
   GetClientResponse,
+  GetIssuanceHistoryApiRequest,
   GetIssuanceHistoryApiResponse,
   GetIssuanceHistoryResponse,
   GetMerchantIdApiResponse,
   GetMerchantIdResponse,
+  IssuanceHistory,
   LoginApiRequest,
   LoginApiResponse,
   LoginResponse,
@@ -81,28 +83,45 @@ export const doLogin = async (
 };
 
 export const doGetIssuanceHistory: (
-  pincode: string,
+  pinCode: string,
   cardId: string,
-) => Promise<GetIssuanceHistoryResponse> = async (pincode, cardId) => {
+) => Promise<GetIssuanceHistoryResponse> = async (pinCode, cardId) => {
   try {
     const axios = await getAxiosInstanceWithAuthHeader();
 
-    const response = await axios.get<
+    const response = await axios.post<
       GetIssuanceHistoryApiResponse,
-      AxiosResponse<GetIssuanceHistoryApiResponse>
-    >(mainEndpoints.getIssuanceHistory(pincode, cardId));
+      AxiosResponse<
+        GetIssuanceHistoryApiResponse,
+        GetIssuanceHistoryApiRequest
+      >,
+      GetIssuanceHistoryApiRequest
+    >(mainEndpoints.getIssuanceHistory, {
+      pinCode,
+      nfcCardId: cardId,
+    });
 
-    if (response.data.length === 0) {
-      return {
-        message: 'Please enter valid pin code',
+    if (response.data?.data) {
+      const issuanceHistory: IssuanceHistory = {
+        ...response.data.data.data,
+        clientCode: response.data.data?.clientCodeAndFullName?.Code,
+        clientName: response.data.data?.clientCodeAndFullName?.FullName,
       };
-    } else {
+
       return {
-        data: response.data[0],
+        data: issuanceHistory,
       };
     }
   } catch (error) {
     console.log('Error Getting Issuance Histroy: ', error);
+
+    if (Axios.isAxiosError(error)) {
+      const _error = error as AxiosError<GetIssuanceHistoryApiResponse>;
+
+      return {
+        message: _error.response.data?.error || 'Something went wrong',
+      };
+    }
 
     return {
       message: 'Something went wrong',
