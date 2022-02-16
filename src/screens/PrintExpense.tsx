@@ -56,11 +56,38 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
     [],
   );
 
-  const onSubmitButtonPressed = useCallback(() => {
+  const printForMerchant = async (price: number) => {
+    setDisableInput(true);
+    setLoading(true);
+
+    const res = await doCreateTrasactionHistory({
+      Client_id: client.id,
+      ItemDescription: 'Expense',
+      Merchant_ID: loginData?.id,
+      IssuanceHistoryId: issuanceHistoryId,
+      dateTime: moment().utc().toDate().toUTCString(),
+      AmountUser: price,
+    });
+
+    if (res.success) {
+      await printReceipt(price, client);
+      setHasPrintedForMerchant(true);
+      setLoading(false);
+    } else {
+      showToast(res.message);
+      setDisableInput(false);
+    }
+  };
+
+  const onSubmitButtonPressed = useCallback(async () => {
     if (pinCode === pinCodeToVerify) {
-      showToast('Pin Code is Correct. you can print the receipt');
       setHasPinCodeVerified(true);
       hideConfirmationModal();
+
+      setLoading(true);
+      const price = parseInt(expensePrice.trim());
+
+      await printForMerchant(price);
     } else {
       showToast('Pin Code entered is incorrect');
     }
@@ -102,35 +129,21 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       if (hasPrintedForMerchant) {
         setLoading(true);
 
-        await printReceipt(price, client);
-
-        const tId = setTimeout(() => {
-          clearTimeout(tId);
-          clearAllStates();
-          navigation.goBack();
-        }, 1000);
-      } else {
-        setDisableInput(true);
-        setLoading(true);
-
-        const res = await doCreateTrasactionHistory({
-          Client_id: client.id,
-          ItemDescription: 'Expense',
-          Merchant_ID: loginData?.id,
-          IssuanceHistoryId: issuanceHistoryId,
-          dateTime: moment().utc().toDate().toUTCString(),
-          AmountUser: price,
-        });
-
-        if (res.success) {
+        try {
           await printReceipt(price, client);
-          setHasPrintedForMerchant(true);
-          setLoading(false);
-        } else {
-          showToast(res.message);
+          const tId = setTimeout(() => {
+            clearTimeout(tId);
+            clearAllStates();
+            navigation.goBack();
+          }, 1000);
+        } catch (error) {
+          console.log('Error printing Receipt');
+
+          showAlert('Error', error.message);
           setDisableInput(false);
         }
-
+      } else {
+        await printForMerchant(price);
         // await printReceipt(price, client);
         // setHasPrintedForMerchant(true);
         // setLoading(false);
@@ -167,7 +180,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
               editable={!disableInput}
               style={styles.input}
               value={expensePrice}
-              placeholder="Expense Amount"
+              placeholder="Amount"
               returnKeyType="done"
               keyboardType="numeric"
               onChangeText={onExpensePriceTextChanged}

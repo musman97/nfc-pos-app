@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React, {useState, createContext, FC, useContext} from 'react';
 import {doLogin} from '~/core/ApiService';
 import {
@@ -47,9 +48,15 @@ const Provider: FC<EmptyProps> = ({children}) => {
     const loginData = await getLoginData();
 
     if (loginData) {
-      setLoginData(loginData);
-      setIsLoading(false);
-      setIsLoggedIn(true);
+      const hasTokenExpired = moment().isAfter(loginData.expiryDate);
+
+      if (!hasTokenExpired) {
+        setLoginData(loginData);
+        setIsLoading(false);
+        setIsLoggedIn(true);
+      } else {
+        await logout();
+      }
     } else {
       setLoginData(null);
       setIsLoading(false);

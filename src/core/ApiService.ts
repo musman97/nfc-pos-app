@@ -5,6 +5,8 @@ import {
   CreateTransactionHistoryResponse,
   GetClientApiResponse,
   GetClientResponse,
+  GetDailyTransactionsApiResponse,
+  GetDailyTransactionsResponse,
   GetIssuanceHistoryApiRequest,
   GetIssuanceHistoryApiResponse,
   GetIssuanceHistoryResponse,
@@ -206,3 +208,31 @@ export const doCreateTrasactionHistory: (
     };
   }
 };
+
+export const doGetDailyTransactions: () => Promise<GetDailyTransactionsResponse> =
+  async () => {
+    try {
+      const axios = await getAxiosInstanceWithAuthHeader();
+
+      const response = await axios.get<
+        GetDailyTransactionsApiResponse,
+        AxiosResponse<GetDailyTransactionsApiResponse>
+      >(mainEndpoints.getDailyTransactions);
+
+      if (response.data?.message === 'success') {
+        return {
+          data: response.data?.data,
+        };
+      } else {
+        return {
+          message: 'Something went wrong',
+        };
+      }
+    } catch (error) {
+      console.log('Error getting daily transactions');
+
+      return {
+        message: 'Something went wrong',
+      };
+    }
+  };

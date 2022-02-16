@@ -35,11 +35,11 @@ public class PosPrinterModule extends ReactContextBaseJavaModule {
         } else {
             try {
                 showToast("Printing...");
-                EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32);
+                EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 220, 48f, 28);
 
                 printer
                         .printFormattedText(
-                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.mipmap.ic_launcher_foreground, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
+                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.drawable.logo, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
                                         textToBePrinted
                         );
                 promise.resolve(true);

@@ -16,15 +16,14 @@ import {
 } from 'react-native-responsive-dimensions';
 import {Button, Header, Icons, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
-import {doGetIssuanceHistory} from '~/core/ApiService';
+import {doGetDailyTransactions, doGetIssuanceHistory} from '~/core/ApiService';
 import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
-  cleanUpWriteRequest,
   initNfcManager,
   readNfcTag,
-  writeNfcTag,
 } from '~/core/NfcReaderWriter';
+import {printDailyReceipt} from '~/core/ReceiptPrinter';
 import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
 import {HomeScreenNavProp, NfcTagOperationStatus} from '~/types';
@@ -36,17 +35,13 @@ export interface Props {
 
 const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [loading, setLoading] = useState(false);
-  const [writeNfcTagLoading, setWriteNfcTagLoading] = useState(false);
+  const [dailyReceiptPrintLoading, setDailyReceiptPrintLoading] =
+    useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
-  const [writeBottomModalShown, setWriteBottomModalShown] = useState(false);
   const [scanningStatus, setScanningStatus] =
     useState<NfcTagOperationStatus>('scanning');
-  const [writeNfcTagStatus, setWriteNfcTagStatus] =
-    useState<NfcTagOperationStatus>('none');
-  const [writeNfcError, setWriteNfcError] = useState('');
   const [error, setError] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [cardNumberToBeWritten, setCardNumberToBeWritten] = useState('');
   const [pinCode, setPinCode] = useState('');
   const [getClientLoading, setGetClientLoading] = useState(false);
 
@@ -80,25 +75,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, []);
 
-  const writeTag = useCallback(async () => {
-    try {
-      setWriteNfcTagStatus('scanning');
-      console.log(`Writing user id: ${cardNumberToBeWritten} on nfc tag`);
-      const writingResult = await writeNfcTag(cardNumberToBeWritten);
-      console.log('Write Nfc Tag Result', writingResult);
-
-      if (writingResult.success) {
-        showToast('Data was Successfully Written');
-        hideWriteNfcBottomModal();
-      } else {
-        setWriteNfcError(writingResult.error);
-        setWriteNfcTagStatus('error');
-      }
-    } catch (error) {
-      console.log('Error Writing Nfc', error);
-    }
-  }, [cardNumberToBeWritten]);
-
   const showBottomModal = useCallback(async () => {
     try {
       setLoading(true);
@@ -118,60 +94,52 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, []);
 
+  const clearAllStates = () => {
+    setLoading(false);
+    setDailyReceiptPrintLoading(false);
+    setBottomModalShown(false);
+    setScanningStatus('scanning');
+    setError('');
+    setPinCode('');
+    setGetClientLoading(false);
+  };
+
   const hideBottomModal = useCallback(() => {
     cleanUpReadingListners();
     setBottomModalShown(false);
-  }, []);
-
-  const showWriteNfcBottomModal = useCallback(async () => {
-    try {
-      setWriteNfcTagLoading(true);
-      const isEnabled = await checkIfNfcEnabled();
-      setWriteNfcTagLoading(false);
-
-      if (isEnabled) {
-        setWriteNfcTagStatus('none');
-        setWriteBottomModalShown(true);
-      } else {
-        Alert.alert(
-          'NFC Disabled',
-          'Nfc is disabled. Please enable Nfc and try again',
-        );
-      }
-    } catch (error) {
-      console.log('Error Checking nfc status');
-    }
-  }, []);
-
-  const hideWriteNfcBottomModal = useCallback(() => {
-    cleanUpWriteRequest();
-    setWriteBottomModalShown(false);
-    setCardNumberToBeWritten('');
   }, []);
 
   const onScanNfcPressed = useCallback(() => {
     showBottomModal();
   }, []);
 
-  const onWriteUserIdPressed = useCallback(() => {
-    if (cardNumberToBeWritten === '') {
-      showToast('Card Number cannot be empty');
-    } else {
-      writeTag();
-    }
-  }, [cardNumberToBeWritten]);
+  const onPrintDailyReceiptPressed = useCallback(async () => {
+    setDailyReceiptPrintLoading(true);
 
-  const onWriteNfcPressed = useCallback(() => {
-    showWriteNfcBottomModal();
+    const apiResponse = await doGetDailyTransactions();
+
+    if (apiResponse.data) {
+      if (apiResponse.data.length === 0) {
+        showToast('There are no transactions to be printed');
+        setDailyReceiptPrintLoading(false);
+        return;
+      }
+
+      try {
+        await printDailyReceipt(apiResponse.data);
+      } catch (error) {
+        console.log('Error printing daily Receipt');
+        showToast(error.message);
+      }
+      setDailyReceiptPrintLoading(false);
+    } else {
+      showToast(apiResponse.message);
+      setDailyReceiptPrintLoading(false);
+    }
   }, []);
 
   const onTryAgainPressed = useCallback(() => {
     readTag();
-  }, []);
-
-  const onWriteTryAgainPressed = useCallback(() => {
-    setCardNumberToBeWritten('');
-    setWriteNfcTagStatus('none');
   }, []);
 
   const onPinCodeTextChange = useCallback(
@@ -192,6 +160,8 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     const issuanceHistoryRes = await doGetIssuanceHistory(pinCode, cardNumber);
 
     if (issuanceHistoryRes?.data) {
+      clearAllStates();
+
       navigate(routeNames.PrintExpense, {
         client: {
           id: issuanceHistoryRes.data.Client_id,
@@ -218,36 +188,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     );
   }, []);
 
-  const renderWriteNfcScanning = useCallback(() => {
-    return (
-      <View style={styles.nfcContentContainer}>
-        <ActivityIndicator animating color={Colors.primary} size="large" />
-        <Text style={styles.scanningNfcText}>
-          Scanning Nearby NFC card to write data
-        </Text>
-      </View>
-    );
-  }, []);
-
-  const renderWriteUserIdContent = useCallback(() => {
-    return (
-      <View style={styles.nfcContentContainer}>
-        <Text style={styles.inputUserIdText}>Enter Card Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Card Number"
-          value={cardNumberToBeWritten}
-          onChangeText={setCardNumberToBeWritten}
-        />
-        <Button
-          style={styles.writeNfcTagBtn}
-          title="Write Card Number"
-          onPress={onWriteUserIdPressed}
-        />
-      </View>
-    );
-  }, [cardNumberToBeWritten]);
-
   const renderTryAgain = useCallback(() => {
     return (
       <View style={styles.nfcContentContainer}>
@@ -256,15 +196,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       </View>
     );
   }, [error]);
-
-  const renderWriteTagTryAgain = useCallback(() => {
-    return (
-      <View style={styles.nfcContentContainer}>
-        <Text style={styles.tryAgainText}>{writeNfcError}</Text>
-        <Button title="Try Again" onPress={onWriteTryAgainPressed} />
-      </View>
-    );
-  }, [writeNfcError]);
 
   const renderNfcTagFound = useCallback(() => {
     return (
@@ -298,18 +229,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, [scanningStatus, pinCode, getClientLoading]);
 
-  const renderWriteNfcModalContent = useCallback(() => {
-    if (writeNfcTagStatus === 'none') {
-      return renderWriteUserIdContent();
-    } else if (writeNfcTagStatus === 'scanning') {
-      return renderWriteNfcScanning();
-    } else if (writeNfcTagStatus === 'error') {
-      return renderWriteTagTryAgain();
-    } else {
-      return null;
-    }
-  }, [writeNfcTagStatus, cardNumberToBeWritten]);
-
   return (
     <ScreenContainer>
       <Header title="Home" hasLogoutButton />
@@ -328,12 +247,12 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             loading={loading}
             onPress={onScanNfcPressed}
           />
-          {/* <Button
-            title="Write NFC card"
+          <Button
+            loading={dailyReceiptPrintLoading}
+            title="Print Daily Receipt"
             style={styles.scanNfcBtn}
-            loading={writeNfcTagLoading}
-            onPress={onWriteNfcPressed}
-          /> */}
+            onPress={onPrintDailyReceiptPressed}
+          />
         </View>
       </View>
       <BottomModal visible={bottomModalShown}>
@@ -348,20 +267,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             />
           </TouchableOpacity>
           {renderModalContent()}
-        </View>
-      </BottomModal>
-      <BottomModal visible={writeBottomModalShown}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity
-            style={styles.closeBottomModalBtn}
-            onPress={hideWriteNfcBottomModal}>
-            <Icons.MaterialIcons
-              name="close"
-              color={Colors.black}
-              size={responsiveFontSize(4)}
-            />
-          </TouchableOpacity>
-          {renderWriteNfcModalContent()}
         </View>
       </BottomModal>
     </ScreenContainer>
@@ -386,7 +291,7 @@ const styles = StyleSheet.create({
   },
   scanNfcBtn: {
     marginTop: responsiveHeight(4),
-    width: '50%',
+    width: '60%',
   },
   modalContainer: {
     alignSelf: 'center',
@@ -427,7 +332,7 @@ const styles = StyleSheet.create({
     marginVertical: responsiveHeight(2),
     fontSize: responsiveFontSize(2.5),
   },
-  writeNfcTagBtn: {
+  printDailyReceiptButton: {
     marginTop: responsiveHeight(2),
     width: '60%',
   },

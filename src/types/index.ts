@@ -46,6 +46,7 @@ export type LoginData = {
   refreshToken?: string;
   dormantUser?: number;
   isAdmin?: number;
+  expiryDate?: number;
 };
 
 export type LoginApiRequest = {
@@ -159,6 +160,28 @@ export type GetMerchantIdSuccessResponse = {
 };
 
 export type GetMerchantIdResponse = GetMerchantIdSuccessResponse &
+  GeneralFailureResponse;
+
+export type DailyTransaction = {
+  id?: string;
+  Client_id?: string;
+  Merchant_ID?: string;
+  ItemDescription?: string;
+  dateTime?: string;
+  AmountUser?: number;
+  issuancehistoryId?: string;
+};
+
+export type GetDailyTransactionsApiResponse = {
+  message?: string;
+  data?: Array<DailyTransaction>;
+};
+
+export type GetDailyTransactionsSuccessResponse = {
+  data?: Array<DailyTransaction>;
+};
+
+export type GetDailyTransactionsResponse = GetDailyTransactionsSuccessResponse &
   GeneralFailureResponse;
 
 // Context

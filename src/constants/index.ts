@@ -10,6 +10,7 @@ export const mainEndpoints = {
   createTransactionHistory: 'transactionHistory/createTransactionHistory',
   getMerchantId: (userId: string) =>
     `auth/getMerchantIdForLoggedInUser/${userId}`,
+  getDailyTransactions: 'transactionHistory/getMerchantsTodaysTransactions',
 };
 
 export const asyncStorageKeys = {
