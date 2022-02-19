@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React, {FC, useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
@@ -18,6 +19,10 @@ import {Button, Header, Icons, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
 import {doGetDailyTransactions, doGetIssuanceHistory} from '~/core/ApiService';
 import {
+  getDailyReportPrintedDate,
+  setDailyReportPrintedDate as setStorageDailyReportPrintedDate,
+} from '~/core/LocalStorageService';
+import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
   initNfcManager,
@@ -27,7 +32,12 @@ import {printDailyReceipt} from '~/core/ReceiptPrinter';
 import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
 import {HomeScreenNavProp, NfcTagOperationStatus} from '~/types';
-import {showToast} from '~/utils';
+import {
+  getCurrentUtcTimestamp,
+  getLocalTimestamp,
+  showAlert,
+  showToast,
+} from '~/utils';
 
 export interface Props {
   navigation: HomeScreenNavProp;
@@ -37,6 +47,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [loading, setLoading] = useState(false);
   const [dailyReceiptPrintLoading, setDailyReceiptPrintLoading] =
     useState(false);
+  const [dailyReportPrintedDate, setDailyReportPrintedDate] = useState('');
   const [bottomModalShown, setBottomModalShown] = useState(false);
   const [scanningStatus, setScanningStatus] =
     useState<NfcTagOperationStatus>('scanning');
@@ -50,11 +61,25 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       try {
         await initNfcManager();
         console.log('Nfc Manager Init');
+        const date = await getDailyReportPrintedDate();
+
+        if (date) {
+          console.log('Daily Report Printed date: ', date);
+          setDailyReportPrintedDate(date);
+        }
       } catch (error) {
         console.log('Error Initializing Nfc Manager');
       }
     })();
   }, []);
+
+  const checkIfNeedToPrintDailyReport = useCallback(() => {
+    if (dailyReportPrintedDate === '') {
+      return true;
+    } else {
+      return moment().isAfter(getLocalTimestamp(dailyReportPrintedDate), 'day');
+    }
+  }, [dailyReportPrintedDate]);
 
   const readTag = useCallback(async () => {
     try {
@@ -110,8 +135,16 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   }, []);
 
   const onScanNfcPressed = useCallback(() => {
-    showBottomModal();
-  }, []);
+    setLoading(true);
+
+    if (checkIfNeedToPrintDailyReport()) {
+      showAlert('Print Daily Report', 'Please print daily report first');
+    } else {
+      showBottomModal();
+    }
+
+    setLoading(false);
+  }, [dailyReportPrintedDate]);
 
   const onPrintDailyReceiptPressed = useCallback(async () => {
     setDailyReceiptPrintLoading(true);
@@ -120,6 +153,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
     if (apiResponse.data) {
       if (apiResponse.data.length === 0) {
+        const currentUtcTimeStamp = getCurrentUtcTimestamp();
+        await setStorageDailyReportPrintedDate(currentUtcTimeStamp);
+        setDailyReportPrintedDate(currentUtcTimeStamp);
+
         showToast('There are no transactions to be printed');
         setDailyReceiptPrintLoading(false);
         return;
@@ -127,6 +164,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
       try {
         await printDailyReceipt(apiResponse.data);
+
+        const currentUtcTimeStamp = getCurrentUtcTimestamp();
+        await setStorageDailyReportPrintedDate(currentUtcTimeStamp);
+        setDailyReportPrintedDate(currentUtcTimeStamp);
       } catch (error) {
         console.log('Error printing daily Receipt');
         showToast(error.message);

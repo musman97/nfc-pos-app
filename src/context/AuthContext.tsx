@@ -55,6 +55,7 @@ const Provider: FC<EmptyProps> = ({children}) => {
         setIsLoading(false);
         setIsLoggedIn(true);
       } else {
+        setIsLoading(false);
         await logout();
       }
     } else {

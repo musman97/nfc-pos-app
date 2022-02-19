@@ -46,3 +46,29 @@ export const clearLoginData: () => Promise<void> = async () => {
     console.log('Error clearing login data', error);
   }
 };
+
+export const setDailyReportPrintedDate: (
+  date: string,
+) => Promise<void> = async date => {
+  try {
+    await AsyncStorage.setItem(asyncStorageKeys.dailyReportPrintedDate, date);
+  } catch (error) {
+    console.log('Error setting daily report printed date', error);
+  }
+};
+
+export const getDailyReportPrintedDate: () => Promise<
+  string | null
+> = async () => {
+  try {
+    const date = await AsyncStorage.getItem(
+      asyncStorageKeys.dailyReportPrintedDate,
+    );
+
+    return date;
+  } catch (error) {
+    console.log('Error getting daily report printed date', error);
+
+    return null;
+  }
+};

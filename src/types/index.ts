@@ -28,16 +28,6 @@ export type ParseTagResult = {
 
 export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
-export type Item = {
-  name: string;
-  price: number;
-};
-
-export type Customer = {
-  name: string;
-  code: string;
-};
-
 // Api Requests and Responses
 
 export type LoginData = {

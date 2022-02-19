@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {Alert, ToastAndroid} from 'react-native';
 
 const floatNumberRegex = /^([0-9]+)|([0-9]+.?[0-9]+)$/;
@@ -39,3 +40,11 @@ export const showAlert: (title: string, message: string) => void = (
     },
   ]);
 };
+
+export const getCurrentUtcTimestamp = () => moment.utc().toISOString();
+
+export const getLocalTimestamp = (utcTimestamp: string) =>
+  moment
+    .utc(utcTimestamp)
+    .utcOffset(moment().utcOffset())
+    .format('YYYY-MM-DDTHH:mm:ssZ');
