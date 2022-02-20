@@ -1,18 +1,12 @@
 import React, {FC} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   Modal,
-  TouchableOpacity,
   StyleProp,
+  StyleSheet,
+  TouchableOpacity,
+  View,
   ViewStyle,
 } from 'react-native';
-import {
-  responsiveFontSize,
-  responsiveHeight,
-  responsiveWidth,
-} from 'react-native-responsive-dimensions';
 import {Colors} from '~/styles';
 
 export interface Props {

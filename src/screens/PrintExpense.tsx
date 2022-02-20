@@ -12,8 +12,13 @@ import {useAuthContext} from '~/context/AuthContext';
 import {doCreateTrasactionHistory} from '~/core/ApiService';
 import {printReceipt} from '~/core/ReceiptPrinter';
 import {Colors} from '~/styles';
-import {AddItemsScreeProps, Client} from '~/types';
-import {isValidIntNumber, showAlert, showToast} from '~/utils';
+import {AddItemsScreeProps, Client, Transaction} from '~/types';
+import {
+  isValidIntNumber,
+  showAlert,
+  showToast,
+  isValidFloatNumber,
+} from '~/utils';
 
 export interface Props extends AddItemsScreeProps {}
 
@@ -46,6 +51,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   }, []);
 
   const hideConfirmationModal = useCallback(() => {
+    setPinCode('');
     setIsConfirmationModalShown(false);
   }, []);
 
@@ -60,20 +66,22 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
     setDisableInput(true);
     setLoading(true);
 
-    const res = await doCreateTrasactionHistory({
+    const transaction: Transaction = {
       Client_id: client.id,
       ItemDescription: 'Expense',
       Merchant_ID: loginData?.id,
       IssuanceHistoryId: issuanceHistoryId,
       dateTime: moment().utc().toDate().toUTCString(),
       AmountUser: price,
-    });
+    };
+    const res = await doCreateTrasactionHistory(transaction);
 
     if (res.success) {
       await printReceipt(price, client);
       setHasPrintedForMerchant(true);
       setLoading(false);
     } else {
+      setLoading(false);
       showToast(res.message);
       setDisableInput(false);
     }
@@ -85,7 +93,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       hideConfirmationModal();
 
       setLoading(true);
-      const price = parseInt(expensePrice.trim());
+      const price = parseFloat(expensePrice.trim());
 
       await printForMerchant(price);
     } else {
@@ -103,7 +111,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       return;
     }
 
-    if (!isValidIntNumber(_expensePrice)) {
+    if (!isValidFloatNumber(_expensePrice)) {
       showAlert(
         'Invalid Amount',
         'Expense Amount entered is invalid. Only numbers are allowed',
@@ -111,7 +119,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       return;
     }
 
-    const price = parseInt(_expensePrice);
+    const price = parseFloat(_expensePrice);
     if (price > balance) {
       showAlert(
         'Expense Limit Reached',
@@ -144,9 +152,6 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
         }
       } else {
         await printForMerchant(price);
-        // await printReceipt(price, client);
-        // setHasPrintedForMerchant(true);
-        // setLoading(false);
       }
     } catch (error) {
       console.log('Error printing Receipt: ', error);
@@ -201,10 +206,11 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       </View>
       <BottomModal
         visible={isConfirmationModalShown}
-        // onBackDropPressed={hideConfirmationModal}>
-      >
+        onBackDropPressed={hideConfirmationModal}>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalText}>Please Enter the Pin Code Again</Text>
+          <Text style={styles.modalText}>
+            Please Enter the Pin Code to Verify Nfc Card
+          </Text>
           <TextInput
             style={[styles.input, styles.modalInput]}
             value={pinCode}

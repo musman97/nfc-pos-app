@@ -85,9 +85,8 @@ export const doLogin = async (
 };
 
 export const doGetIssuanceHistory: (
-  pinCode: string,
   cardId: string,
-) => Promise<GetIssuanceHistoryResponse> = async (pinCode, cardId) => {
+) => Promise<GetIssuanceHistoryResponse> = async cardId => {
   try {
     const axios = await getAxiosInstanceWithAuthHeader();
 
@@ -99,7 +98,6 @@ export const doGetIssuanceHistory: (
       >,
       GetIssuanceHistoryApiRequest
     >(mainEndpoints.getIssuanceHistory, {
-      pinCode,
       nfcCardId: cardId,
     });
 
@@ -187,6 +185,7 @@ export const doCreateTrasactionHistory: (
   transaction: Transaction,
 ) => Promise<CreateTransactionHistoryResponse> = async transaction => {
   try {
+    console.log(transaction);
     const axios = await getAxiosInstanceWithAuthHeader();
 
     const apiResponse = await axios.post<
@@ -201,6 +200,12 @@ export const doCreateTrasactionHistory: (
     };
   } catch (error) {
     console.log('Error creating transaction history', error);
+
+    if (Axios.isAxiosError(error)) {
+      const _error = error as AxiosError<CreateTransactionHistoryApiResponse>;
+
+      console.log(_error.response.data);
+    }
 
     return {
       success: false,

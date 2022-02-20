@@ -83,7 +83,6 @@ export type IssuanceHistory = {
 };
 
 export type GetIssuanceHistoryApiRequest = {
-  pinCode: string;
   nfcCardId: string;
 };
 
