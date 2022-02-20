@@ -308,7 +308,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             onPress={onPrintDailyReceiptPressed}
           />
           <Button
-            title="Print Balance"
+            title="Show Balance"
             style={styles.scanNfcBtn}
             onPress={onPrintBalancePressed}
           />
