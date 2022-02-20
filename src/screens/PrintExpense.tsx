@@ -13,12 +13,7 @@ import {doCreateTrasactionHistory} from '~/core/ApiService';
 import {printReceipt} from '~/core/ReceiptPrinter';
 import {Colors} from '~/styles';
 import {AddItemsScreeProps, Client, Transaction} from '~/types';
-import {
-  isValidIntNumber,
-  showAlert,
-  showToast,
-  isValidFloatNumber,
-} from '~/utils';
+import {isValidFloatNumber, showAlert, showToast} from '~/utils';
 
 export interface Props extends AddItemsScreeProps {}
 
@@ -38,6 +33,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   const balance = route.params?.balance;
   const issuanceHistoryId = route.params?.issuanceHistoryId;
   const pinCodeToVerify = route.params?.pinCode;
+  const paybackPeriod = route.params?.paybackPeriod;
 
   const clearAllStates = useCallback(() => {
     setExpensePrice('');
@@ -77,7 +73,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
     const res = await doCreateTrasactionHistory(transaction);
 
     if (res.success) {
-      await printReceipt(price, client);
+      await printReceipt(price, client, loginData?.name);
       setHasPrintedForMerchant(true);
       setLoading(false);
     } else {
@@ -138,7 +134,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
         setLoading(true);
 
         try {
-          await printReceipt(price, client);
+          await printReceipt(price, client, loginData?.name);
           const tId = setTimeout(() => {
             clearTimeout(tId);
             clearAllStates();
@@ -179,6 +175,16 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
               </View>
               <View style={styles.clientInfoRightColumn}>
                 <Text style={styles.clientInfoValueText}>{client.code}</Text>
+              </View>
+            </View>
+            <View style={[styles.clientInfoWrapper, styles.clientInfoDivider]}>
+              <View style={styles.clientInfoLeftColumn}>
+                <Text style={styles.clientInfoLabelText}>Payback Period</Text>
+              </View>
+              <View style={styles.clientInfoRightColumn}>
+                <Text style={styles.clientInfoValueText}>
+                  {paybackPeriod} (month(s))
+                </Text>
               </View>
             </View>
             <TextInput

@@ -27,14 +27,21 @@ import {
   initNfcManager,
   readNfcTag,
 } from '~/core/NfcReaderWriter';
-import {printDailyReceipt} from '~/core/ReceiptPrinter';
+import {printDailyReceipt, printBalance} from '~/core/ReceiptPrinter';
 import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
-import {HomeScreenNavProp, NfcTagOperationStatus} from '~/types';
+import {
+  HomeScreenNavProp,
+  NfcTagOperationStatus,
+  NfcTagScanningReason,
+} from '~/types';
+import {useAuthContext} from '~/context/AuthContext';
 import {
   getCurrentUtcTimestamp,
   getLocalTimestamp,
   showAlert,
+  showPrintBalanceAlert,
+  showPrintDailyReportAlert,
   showToast,
 } from '~/utils';
 
@@ -43,6 +50,8 @@ export interface Props {
 }
 
 const Home: FC<Props> = ({navigation: {navigate}}) => {
+  const {loginData} = useAuthContext();
+
   const [loading, setLoading] = useState(false);
   const [dailyReceiptPrintLoading, setDailyReceiptPrintLoading] =
     useState(false);
@@ -50,9 +59,11 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [bottomModalShown, setBottomModalShown] = useState(false);
   const [scanningStatus, setScanningStatus] =
     useState<NfcTagOperationStatus>('scanning');
+  const [nfcTagScanningReason, setNfcTagScanningReason] =
+    useState<NfcTagScanningReason>('expense');
   const [error, setError] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [apiLoading, setApiLoading] = useState(false);
+  const [loaderLoading, setLoaderLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -106,29 +117,53 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
   const onReadNfcTagSuccess = useCallback(async () => {
     clearAllStates();
-    setApiLoading(true);
+    setLoaderLoading(true);
 
     const issuanceHistoryRes = await doGetIssuanceHistory(cardNumber);
 
-    if (issuanceHistoryRes?.data) {
-      setApiLoading(false);
+    if (nfcTagScanningReason === 'expense') {
+      if (issuanceHistoryRes?.data) {
+        setLoaderLoading(false);
 
-      navigate(routeNames.PrintExpense, {
-        client: {
-          id: issuanceHistoryRes.data.Client_id,
-          code: issuanceHistoryRes.data.clientCode,
-          name: issuanceHistoryRes.data.clientName,
-        },
-        balance: parseFloat(issuanceHistoryRes?.data?.Balance),
-        cardId: cardNumber,
-        pinCode: issuanceHistoryRes.data.Pincode,
-        issuanceHistoryId: issuanceHistoryRes?.data?.id,
-      });
+        navigate(routeNames.PrintExpense, {
+          client: {
+            id: issuanceHistoryRes.data?.Client_id,
+            code: issuanceHistoryRes.data?.clientCode,
+            name: issuanceHistoryRes.data?.clientName,
+          },
+          paybackPeriod: issuanceHistoryRes.data?.paybackPeriod,
+          balance: parseFloat(issuanceHistoryRes?.data?.Balance),
+          cardId: cardNumber,
+          pinCode: issuanceHistoryRes.data.Pincode,
+          issuanceHistoryId: issuanceHistoryRes?.data?.id,
+        });
+      } else {
+        setLoaderLoading(false);
+        showToast(issuanceHistoryRes?.message);
+      }
     } else {
-      setApiLoading(false);
-      showToast(issuanceHistoryRes?.message);
+      setLoaderLoading(false);
+      const balance = parseFloat(issuanceHistoryRes?.data?.Balance);
+
+      showPrintBalanceAlert(balance, async () => {
+        try {
+          await printBalance(
+            {
+              id: issuanceHistoryRes.data?.Client_id,
+              code: issuanceHistoryRes.data?.clientCode,
+              name: issuanceHistoryRes.data?.clientName,
+            },
+            loginData?.name,
+            balance,
+          );
+        } catch (error) {
+          console.log('Error printing Balance');
+
+          showToast(error.message);
+        }
+      });
     }
-  }, [cardNumber]);
+  }, [cardNumber, nfcTagScanningReason]);
 
   const showBottomModal = useCallback(async () => {
     try {
@@ -155,7 +190,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setBottomModalShown(false);
     setScanningStatus('scanning');
     setError('');
-    setApiLoading(false);
+    setLoaderLoading(false);
   };
 
   const hideBottomModal = useCallback(() => {
@@ -165,9 +200,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
   const onScanNfcPressed = useCallback(() => {
     setLoading(true);
+    setNfcTagScanningReason('expense');
 
     if (checkIfNeedToPrintDailyReport()) {
-      showAlert('Print Daily Report', 'Please print daily report first');
+      showPrintDailyReportAlert();
     } else {
       showBottomModal();
     }
@@ -192,7 +228,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       }
 
       try {
-        await printDailyReceipt(apiResponse.data);
+        await printDailyReceipt(apiResponse.data, loginData?.name);
 
         const currentUtcTimeStamp = getCurrentUtcTimestamp();
         await setStorageDailyReportPrintedDate(currentUtcTimeStamp);
@@ -207,6 +243,15 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       setDailyReceiptPrintLoading(false);
     }
   }, []);
+
+  const onPrintBalancePressed = useCallback(() => {
+    if (!checkIfNeedToPrintDailyReport()) {
+      setNfcTagScanningReason('balance');
+      showBottomModal();
+    } else {
+      showPrintDailyReportAlert();
+    }
+  }, [dailyReportPrintedDate]);
 
   const onTryAgainPressed = useCallback(() => {
     readTag();
@@ -262,6 +307,11 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             style={styles.scanNfcBtn}
             onPress={onPrintDailyReceiptPressed}
           />
+          <Button
+            title="Print Balance"
+            style={styles.scanNfcBtn}
+            onPress={onPrintBalancePressed}
+          />
         </View>
       </View>
       <BottomModal visible={bottomModalShown}>
@@ -278,7 +328,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
           {renderModalContent()}
         </View>
       </BottomModal>
-      <Loader visible={apiLoading} />
+      <Loader visible={loaderLoading} />
     </ScreenContainer>
   );
 };
@@ -289,7 +339,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     alignSelf: 'center',
-    marginTop: responsiveHeight(10),
+    marginTop: responsiveHeight(5),
     alignItems: 'center',
     width: '80%',
   },

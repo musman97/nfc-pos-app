@@ -11,6 +11,7 @@ export const mainEndpoints = {
   getMerchantId: (userId: string) =>
     `auth/getMerchantIdForLoggedInUser/${userId}`,
   getDailyTransactions: 'transactionHistory/getMerchantsTodaysTransactions',
+  getMerchantName: 'merchants/getMerchantNameByUserId',
 };
 
 export const asyncStorageKeys = {

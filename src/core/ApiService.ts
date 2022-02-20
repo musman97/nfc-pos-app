@@ -16,6 +16,7 @@ import {
   LoginApiRequest,
   LoginApiResponse,
   LoginResponse,
+  MerchantNameApiResponse,
   Transaction,
 } from '~/types';
 import {getAuthToken} from './LocalStorageService';
@@ -57,8 +58,20 @@ export const doLogin = async (
       LoginApiRequest
     >(authEndpoints.login, {email, password});
 
+    const merchantNameApiRes = await axios.get<
+      MerchantNameApiResponse,
+      AxiosResponse<MerchantNameApiResponse>
+    >(mainEndpoints.getMerchantName, {
+      headers: {
+        Authorization: `Bearer ${response.data?.data?.accessToken}`,
+      },
+    });
+
+    const data = response.data?.data;
+    data.name = merchantNameApiRes.data?.Name;
+
     return {
-      data: response.data?.data,
+      data,
     };
   } catch (error) {
     if (Axios.isAxiosError(error)) {
@@ -106,6 +119,8 @@ export const doGetIssuanceHistory: (
         ...response.data.data.data,
         clientCode: response.data.data?.clientCodeAndFullName?.Code,
         clientName: response.data.data?.clientCodeAndFullName?.FullName,
+        paybackPeriod:
+          response.data.data?.clientCodeAndFullName?.numberOfMonths,
       };
 
       return {

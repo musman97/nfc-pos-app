@@ -28,7 +28,13 @@ export type ParseTagResult = {
 
 export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
+export type NfcTagScanningReason = 'expense' | 'balance';
+
 // Api Requests and Responses
+
+export type GeneralFailureResponse = {
+  message?: string;
+};
 
 export type LoginData = {
   id?: string;
@@ -37,6 +43,7 @@ export type LoginData = {
   dormantUser?: number;
   isAdmin?: number;
   expiryDate?: number;
+  name?: string;
 };
 
 export type LoginApiRequest = {
@@ -54,8 +61,8 @@ export type LoginSuccessResponse = {
   data?: LoginData;
 };
 
-export type GeneralFailureResponse = {
-  message?: string;
+export type MerchantNameApiResponse = {
+  Name?: string;
 };
 
 export type LoginResponse = LoginSuccessResponse & GeneralFailureResponse;
@@ -70,6 +77,7 @@ export type IssuanceHistory = {
   Balance?: string;
   clientCode?: string;
   clientName?: string;
+  paybackPeriod?: number;
 };
 
 export type GetIssuanceHistoryApiRequest = {
@@ -91,6 +99,7 @@ export type GetIssuanceHistoryApiResponse = {
     clientCodeAndFullName?: {
       Code?: string;
       FullName?: string;
+      numberOfMonths?: number;
     };
   };
 };
@@ -201,6 +210,7 @@ export type MainStackParamList = {
   [routeNames.Home]: undefined;
   [routeNames.PrintExpense]: {
     client: Client;
+    paybackPeriod: number;
     balance: number;
     cardId: string;
     pinCode: string;

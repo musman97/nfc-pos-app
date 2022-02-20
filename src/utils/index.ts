@@ -41,6 +41,26 @@ export const showAlert: (title: string, message: string) => void = (
   ]);
 };
 
+export const showPrintDailyReportAlert = () => {
+  showAlert('Print Daily Report', 'Please print daily report first');
+};
+
+export const showPrintBalanceAlert: (
+  balance: number,
+  onPrintPress: () => void,
+) => void = (balance, onPrintPress) => {
+  Alert.alert('Balance', 'Your balance is : ' + balance, [
+    {
+      text: 'Print',
+      onPress: onPrintPress,
+    },
+    {
+      text: 'OK',
+      onPress: noop,
+    },
+  ]);
+};
+
 export const getCurrentUtcTimestamp = () => moment.utc().toISOString();
 
 export const getLocalTimestamp = (utcTimestamp: string) =>
