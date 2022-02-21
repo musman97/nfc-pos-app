@@ -41,7 +41,7 @@ export const setLoginData: (
 
 export const clearLoginData: () => Promise<void> = async () => {
   try {
-    await AsyncStorage.removeItem(asyncStorageKeys.loginData);
+    await AsyncStorage.multiRemove(await AsyncStorage.getAllKeys());
   } catch (error) {
     console.log('Error clearing login data', error);
   }

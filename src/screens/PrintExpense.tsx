@@ -116,6 +116,12 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
     }
 
     const price = parseFloat(_expensePrice);
+
+    if (price <= 0) {
+      showAlert('Invalid Amount', 'Please enter a valid amount');
+      return;
+    }
+
     if (price > balance) {
       showAlert(
         'Expense Limit Reached',
