@@ -205,7 +205,9 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
-      showBottomModal();
+      setCardNumber('23');
+      setScanningStatus('success');
+      // showBottomModal();
     }
 
     setLoading(false);
