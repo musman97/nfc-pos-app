@@ -3,8 +3,19 @@ import {routeNames} from '~/navigation/routeNames';
 
 // Common
 
+export type PrinterConfig = {
+  printerDpi: number;
+  printerWidthMM: number;
+  printerNbrCharactersPerLine: number;
+};
+
 export interface PosPrinterInterface {
-  print: (textToBePrinted: string) => Promise<boolean>;
+  print: (
+    textToBePrinted: string,
+    printerDpi: number,
+    printerWidthMM: number,
+    printerNbrCharactersPerLine: number,
+  ) => Promise<boolean>;
 }
 
 export interface EmptyProps {}
