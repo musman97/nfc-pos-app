@@ -28,7 +28,7 @@ export type ParseTagResult = {
 
 export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
-export type NfcTagScanningReason = 'expense' | 'balance';
+export type NfcTagScanningReason = 'expense' | 'balance' | 'retour';
 
 // Api Requests and Responses
 
@@ -215,6 +215,7 @@ export type MainStackParamList = {
     cardId: string;
     pinCode: string;
     issuanceHistoryId: string;
+    paymentType: NfcTagScanningReason;
   };
 };
 

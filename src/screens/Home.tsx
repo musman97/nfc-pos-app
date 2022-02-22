@@ -121,7 +121,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
     const issuanceHistoryRes = await doGetIssuanceHistory(cardNumber);
 
-    if (nfcTagScanningReason === 'expense') {
+    if (nfcTagScanningReason !== 'balance') {
       if (issuanceHistoryRes?.data) {
         setLoaderLoading(false);
 
@@ -136,6 +136,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
           cardId: cardNumber,
           pinCode: issuanceHistoryRes.data.Pincode,
           issuanceHistoryId: issuanceHistoryRes?.data?.id,
+          paymentType: nfcTagScanningReason,
         });
       } else {
         setLoaderLoading(false);
@@ -199,7 +200,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   }, []);
 
   const onScanNfcPressed = useCallback(() => {
-    setLoading(true);
     setNfcTagScanningReason('expense');
 
     if (checkIfNeedToPrintDailyReport()) {
@@ -209,8 +209,26 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       // setScanningStatus('success');
       showBottomModal();
     }
+  }, [dailyReportPrintedDate]);
 
-    setLoading(false);
+  const onScanNfcForRetourPressed = useCallback(() => {
+    setNfcTagScanningReason('retour');
+
+    if (checkIfNeedToPrintDailyReport()) {
+      showPrintDailyReportAlert();
+    } else {
+      showBottomModal();
+    }
+  }, [dailyReportPrintedDate]);
+
+  const onScanNfcForBalance = useCallback(() => {
+    setNfcTagScanningReason('balance');
+
+    if (!checkIfNeedToPrintDailyReport()) {
+      showBottomModal();
+    } else {
+      showPrintDailyReportAlert();
+    }
   }, [dailyReportPrintedDate]);
 
   const onPrintDailyReceiptPressed = useCallback(async () => {
@@ -245,15 +263,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       setDailyReceiptPrintLoading(false);
     }
   }, []);
-
-  const onPrintBalancePressed = useCallback(() => {
-    if (!checkIfNeedToPrintDailyReport()) {
-      setNfcTagScanningReason('balance');
-      showBottomModal();
-    } else {
-      showPrintDailyReportAlert();
-    }
-  }, [dailyReportPrintedDate]);
 
   const onTryAgainPressed = useCallback(() => {
     readTag();
@@ -298,10 +307,15 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             />
           </View>
           <Button
-            title="Read NFC card"
+            title="Read NFC card for Expense"
             style={styles.scanNfcBtn}
             loading={loading}
             onPress={onScanNfcPressed}
+          />
+          <Button
+            title="Read NFC card for Retour"
+            style={styles.scanNfcBtn}
+            onPress={onScanNfcForRetourPressed}
           />
           <Button
             loading={dailyReceiptPrintLoading}
@@ -312,7 +326,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
           <Button
             title="Show Balance"
             style={styles.scanNfcBtn}
-            onPress={onPrintBalancePressed}
+            onPress={onScanNfcForBalance}
           />
         </View>
       </View>
@@ -353,7 +367,7 @@ const styles = StyleSheet.create({
   },
   scanNfcBtn: {
     marginTop: responsiveHeight(4),
-    width: '60%',
+    width: '80%',
   },
   modalContainer: {
     alignSelf: 'center',

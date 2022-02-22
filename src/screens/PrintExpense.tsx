@@ -34,6 +34,9 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   const issuanceHistoryId = route.params?.issuanceHistoryId;
   const pinCodeToVerify = route.params?.pinCode;
   const paybackPeriod = route.params?.paybackPeriod;
+  const paymentType = route.params?.paymentType;
+
+  console.log('Payment Type', paymentType);
 
   const clearAllStates = useCallback(() => {
     setExpensePrice('');
