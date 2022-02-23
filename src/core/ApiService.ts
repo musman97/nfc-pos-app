@@ -220,6 +220,10 @@ export const doCreateTrasactionHistory: (
       const _error = error as AxiosError<CreateTransactionHistoryApiResponse>;
 
       console.log(_error.response.data);
+      return {
+        success: false,
+        message: _error.response.data?.message || 'Something went wrong',
+      };
     }
 
     return {

@@ -41,6 +41,7 @@ const Provider: FC<EmptyProps> = ({children}) => {
     loginData: LoginData,
   ) => Promise<void> = async loginData => {
     await setLoginDataInLocalStorage(loginData);
+    setLoginData(loginData);
     setIsLoggedIn(true);
   };
 
