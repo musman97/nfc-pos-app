@@ -45,6 +45,8 @@ import {
   showToast,
 } from '~/utils';
 
+const testCardNumber = 'K-0035';
+
 export interface Props {
   navigation: HomeScreenNavProp;
 }
@@ -205,7 +207,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
-      // setCardNumber('23');
+      // setCardNumber(testCardNumber);
       // setScanningStatus('success');
       showBottomModal();
     }
@@ -217,6 +219,8 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
+      // setCardNumber(testCardNumber);
+      // setScanningStatus('success');
       showBottomModal();
     }
   }, [dailyReportPrintedDate]);
@@ -224,10 +228,12 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const onScanNfcForBalance = useCallback(() => {
     setNfcTagScanningReason('balance');
 
-    if (!checkIfNeedToPrintDailyReport()) {
-      showBottomModal();
-    } else {
+    if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
+    } else {
+      // setCardNumber(testCardNumber);
+      // setScanningStatus('success');
+      showBottomModal();
     }
   }, [dailyReportPrintedDate]);
 

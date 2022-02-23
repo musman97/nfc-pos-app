@@ -130,6 +130,11 @@ export type CreateTransactionHistoryApiResponse = {
   message?: string;
 };
 
+export enum TransactionType {
+  expense = 1,
+  retour = 2,
+}
+
 export type Transaction = {
   Client_id: string;
   Merchant_ID: string;
@@ -137,6 +142,7 @@ export type Transaction = {
   ItemDescription: 'Expense';
   dateTime: string;
   AmountUser: number;
+  transactionType: TransactionType;
 };
 
 export type CreateTransactionHistoryResponse = {

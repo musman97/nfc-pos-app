@@ -12,7 +12,12 @@ import {useAuthContext} from '~/context/AuthContext';
 import {doCreateTrasactionHistory} from '~/core/ApiService';
 import {printReceipt} from '~/core/ReceiptPrinter';
 import {Colors} from '~/styles';
-import {AddItemsScreeProps, Client, Transaction} from '~/types';
+import {
+  AddItemsScreeProps,
+  Client,
+  Transaction,
+  TransactionType,
+} from '~/types';
 import {isValidFloatNumber, showAlert, showToast} from '~/utils';
 
 export interface Props extends AddItemsScreeProps {}
@@ -35,8 +40,6 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   const pinCodeToVerify = route.params?.pinCode;
   const paybackPeriod = route.params?.paybackPeriod;
   const paymentType = route.params?.paymentType;
-
-  console.log('Payment Type', paymentType);
 
   const clearAllStates = useCallback(() => {
     setExpensePrice('');
@@ -72,7 +75,12 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       IssuanceHistoryId: issuanceHistoryId,
       dateTime: moment().utc().toDate().toUTCString(),
       AmountUser: price,
+      transactionType:
+        paymentType === 'expense'
+          ? TransactionType.expense
+          : TransactionType.retour,
     };
+    console.log('Transaction: ', transaction);
     const res = await doCreateTrasactionHistory(transaction);
 
     if (res.success) {

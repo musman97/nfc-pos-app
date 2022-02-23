@@ -49,7 +49,7 @@ export const showPrintBalanceAlert: (
   balance: number,
   onPrintPress: () => void,
 ) => void = (balance, onPrintPress) => {
-  Alert.alert('Balance', 'Your balance is : ' + balance, [
+  Alert.alert('Balance', `Your balance is : NAFL ${balance}`, [
     {
       text: 'Print',
       onPress: onPrintPress,
