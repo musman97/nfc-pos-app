@@ -16,21 +16,34 @@ import {
 import {Colors} from '~/styles';
 import {Icons} from './index';
 import {useAuthContext} from '~/context/AuthContext';
+import {routeNames} from '~/navigation/routeNames';
+import {HomeScreenNavProp, MainStackParamList} from '~/types';
 
 export interface Props {
   style?: StyleProp<ViewStyle>;
   hasBackButton?: boolean;
   hasLogoutButton?: boolean;
+  hasSettingsButton?: boolean;
   title: string;
 }
 
-const Header: FC<Props> = ({style, hasBackButton, title, hasLogoutButton}) => {
+const Header: FC<Props> = ({
+  style,
+  hasBackButton,
+  title,
+  hasLogoutButton,
+  hasSettingsButton,
+}) => {
   const {logout} = useAuthContext();
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<HomeScreenNavProp>();
 
   const onBackPressed = useCallback(() => {
     navigation.goBack();
+  }, []);
+
+  const onSettingsIconPressed = useCallback(() => {
+    navigation.navigate(routeNames.PrinterConfig);
   }, []);
 
   return (
@@ -47,15 +60,26 @@ const Header: FC<Props> = ({style, hasBackButton, title, hasLogoutButton}) => {
         ) : null}
         <Text style={styles.titleText}>{title}</Text>
       </View>
-      {hasLogoutButton ? (
-        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-          <Icons.MaterialIcons
-            name="logout"
-            size={responsiveFontSize(4)}
-            color={Colors.white}
-          />
-        </TouchableOpacity>
-      ) : null}
+      <View style={styles.fRow}>
+        {hasSettingsButton ? (
+          <TouchableOpacity onPress={onSettingsIconPressed}>
+            <Icons.FontAwsome
+              name="gear"
+              size={responsiveFontSize(4)}
+              color={Colors.white}
+            />
+          </TouchableOpacity>
+        ) : null}
+        {hasLogoutButton ? (
+          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+            <Icons.MaterialIcons
+              name="logout"
+              size={responsiveFontSize(4)}
+              color={Colors.white}
+            />
+          </TouchableOpacity>
+        ) : null}
+      </View>
     </View>
   );
 };
@@ -63,6 +87,10 @@ const Header: FC<Props> = ({style, hasBackButton, title, hasLogoutButton}) => {
 const styles = StyleSheet.create({
   f1: {
     flex: 1,
+  },
+  fRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   container: {
     flexDirection: 'row',
@@ -85,7 +113,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: responsiveFontSize(3),
   },
-  logoutBtn: {},
+  logoutBtn: {
+    marginLeft: responsiveWidth(4),
+  },
 });
 
 export default Header;

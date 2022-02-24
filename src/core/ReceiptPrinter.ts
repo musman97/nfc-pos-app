@@ -1,12 +1,13 @@
 import moment from 'moment';
 import {print} from '~/native_modules/PosPrinter';
-import {Client, DailyTransaction} from '~/types';
+import {Client, DailyTransaction, TransactionType} from '~/types';
 
 export const printReceipt: (
   price: number,
   customer: Client,
   merchantName: string,
-) => Promise<void> = async (price, customer, merchantName) => {
+  paymentType: TransactionType,
+) => Promise<void> = async (price, customer, merchantName, paymentType) => {
   const textToBePrinted =
     "[C]<u><font size='big'>Norsa N.V.</font></u>\n" +
     '[L]\n' +
@@ -15,7 +16,9 @@ export const printReceipt: (
     `[L]\n` +
     '[C]================================\n' +
     '[L]\n' +
-    `[L]Amount :[R]NAFL ${price}\n` +
+    `[L]${
+      paymentType === TransactionType.expense ? 'Sale' : 'Retour'
+    } Amount :[R]NAFL ${price}\n` +
     '[L]\n' +
     '[C]================================\n' +
     '[L]\n' +
@@ -29,7 +32,7 @@ export const printReceipt: (
     "[L]<font size='tall'>Signature :</font>\n" +
     `[L]\n` +
     `[L]\n` +
-    `[L]--------------------------------\n` +
+    `[C]--------------------------------\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
     `[L]For questions or inquiries call customer service : +5999 767-1563`;
@@ -62,7 +65,7 @@ export const printDailyReceipt: (
     '[L]\n' +
     '[C]================================\n' +
     '[L]\n' +
-    `[R]<b>Total :</b>[R]NAFL ${totalExpense}\n` +
+    `[R]<b>Daily sales total :</b>[R]NAFL ${totalExpense}\n` +
     "[L]<font size='tall'>Merchant :</font>\n" +
     `[L]${merchantName}\n` +
     `[L]\n` +
@@ -70,7 +73,7 @@ export const printDailyReceipt: (
     "[L]<font size='tall'>Signature :</font>\n" +
     `[L]\n` +
     `[L]\n` +
-    `[L]--------------------------------\n` +
+    `[C]--------------------------------\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
     `[L]For questions or inquiries call customer service : +5999 767-1563`;
@@ -107,7 +110,7 @@ export const printBalance: (
     "[L]<font size='tall'>Signature :</font>\n" +
     `[L]\n` +
     `[L]\n` +
-    `[L]--------------------------------\n` +
+    `[C]--------------------------------\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
     `[L]For questions or inquiries call customer service : +5999 767-1563`;

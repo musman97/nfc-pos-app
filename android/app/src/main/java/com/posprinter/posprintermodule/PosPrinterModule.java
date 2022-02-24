@@ -3,6 +3,7 @@ package com.posprinter.posprintermodule;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,19 +30,31 @@ public class PosPrinterModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    void print(String textToBePrinted, Promise promise) {
-        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getCurrentActivity()), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getCurrentActivity(), new String[]{Manifest.permission.BLUETOOTH}, 100);
+    void print(String textToBePrinted, int printerDpi, float printerWidthMM, int printerNbrCharactersPerLine,
+            Promise promise) {
+        if (ContextCompat.checkSelfPermission(Objects.requireNonNull(getCurrentActivity()),
+                Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getCurrentActivity(), new String[] { Manifest.permission.BLUETOOTH },
+                    100);
         } else {
             try {
                 showToast("Printing...");
-                EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 220, 48f, 28);
+                EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), printerDpi,
+                        printerWidthMM, printerNbrCharactersPerLine);
+                String finalText = "[C]<img>"
+                        + PrinterTextParserImg.bitmapToHexadecimalString(printer,
+                                getCurrentActivity().getResources().getDrawableForDensity(R.drawable.logo,
+                                        DisplayMetrics.DENSITY_MEDIUM))
+                        + "</img>\n" +
+                        textToBePrinted;
+
+                Log.d(PosPrinterModule.class.getSimpleName(), "Dpi " + printerDpi + " Width " + printerWidthMM
+                        + " CharactersPerLine " + printerNbrCharactersPerLine);
+                Log.d(PosPrinterModule.class.getSimpleName(), finalText);
 
                 printer
                         .printFormattedText(
-                                "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, getCurrentActivity().getResources().getDrawableForDensity(R.drawable.logo, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
-                                        textToBePrinted
-                        );
+                                finalText);
                 promise.resolve(true);
             } catch (Exception e) {
                 ReactNativeFirebaseCrashlyticsNativeHelper.recordNativeException(e);

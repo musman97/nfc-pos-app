@@ -1,6 +1,39 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {asyncStorageKeys} from '../constants/index';
-import {LoginData} from '~/types';
+import {LoginData, PrinterConfig} from '~/types';
+import {printerDefaultConfig} from '~/utils';
+
+export const getPrinterDefaultConfig: () => Promise<PrinterConfig> =
+  async () => {
+    try {
+      const configJson = await AsyncStorage.getItem(
+        asyncStorageKeys.printerDefaultConfig,
+      );
+
+      if (configJson) {
+        const config: PrinterConfig = JSON.parse(configJson);
+        return config;
+      } else {
+        return printerDefaultConfig;
+      }
+    } catch (error) {
+      console.log('Error getting config data from async storage', error);
+      return printerDefaultConfig;
+    }
+  };
+
+export const setPrinterDefaultConfig: (
+  config: PrinterConfig,
+) => Promise<void> = async config => {
+  try {
+    await AsyncStorage.setItem(
+      asyncStorageKeys.printerDefaultConfig,
+      JSON.stringify(config),
+    );
+  } catch (error) {
+    console.log('Error setting config data', error);
+  }
+};
 
 export const getLoginData: () => Promise<LoginData | null> = async () => {
   try {

@@ -1,10 +1,17 @@
 import moment from 'moment';
 import {Alert, ToastAndroid} from 'react-native';
+import {PrinterConfig} from '~/types';
 
 const floatNumberRegex = /^(\d+(\.\d+)?)$|^(.?\d+)$/;
 const intNumberRegex = /^[0-9]+$/;
 const emailRegex =
   /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+
+export const printerDefaultConfig: PrinterConfig = {
+  printerDpi: 150,
+  printerWidthMM: 48,
+  printerNbrCharactersPerLine: 30,
+};
 
 export const noop: () => void = () => {};
 

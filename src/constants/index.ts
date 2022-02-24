@@ -17,4 +17,5 @@ export const mainEndpoints = {
 export const asyncStorageKeys = {
   loginData: 'KEY_LOGIN_DATA',
   dailyReportPrintedDate: 'KEY_DAILY_REPORT_PRRINTED_DATE',
+  printerDefaultConfig: 'KEY_PRINTER_DEFAULT_CONFIG',
 };

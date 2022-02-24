@@ -3,7 +3,6 @@ import React, {FC, useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Keyboard,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import {Button, Header, Icons, Loader, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
+import {useAuthContext} from '~/context/AuthContext';
 import {doGetDailyTransactions, doGetIssuanceHistory} from '~/core/ApiService';
 import {
   getDailyReportPrintedDate,
@@ -27,7 +27,7 @@ import {
   initNfcManager,
   readNfcTag,
 } from '~/core/NfcReaderWriter';
-import {printDailyReceipt, printBalance} from '~/core/ReceiptPrinter';
+import {printBalance, printDailyReceipt} from '~/core/ReceiptPrinter';
 import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
 import {
@@ -35,11 +35,9 @@ import {
   NfcTagOperationStatus,
   NfcTagScanningReason,
 } from '~/types';
-import {useAuthContext} from '~/context/AuthContext';
 import {
   getCurrentUtcTimestamp,
   getLocalTimestamp,
-  showAlert,
   showPrintBalanceAlert,
   showPrintDailyReportAlert,
   showToast,
@@ -302,7 +300,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
   return (
     <ScreenContainer>
-      <Header title="Home" hasLogoutButton />
+      <Header title="Home" hasLogoutButton hasSettingsButton />
       <View style={styles.f1}>
         <View style={styles.contentContainer}>
           <View style={styles.nfcIconWrapper}>
@@ -313,13 +311,13 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             />
           </View>
           <Button
-            title="Read NFC card for Expense"
+            title="Expense"
             style={styles.scanNfcBtn}
             loading={loading}
             onPress={onScanNfcPressed}
           />
           <Button
-            title="Read NFC card for Retour"
+            title="Retour"
             style={styles.scanNfcBtn}
             onPress={onScanNfcForRetourPressed}
           />

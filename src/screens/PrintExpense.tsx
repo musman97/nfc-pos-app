@@ -84,7 +84,14 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
     const res = await doCreateTrasactionHistory(transaction);
 
     if (res.success) {
-      await printReceipt(price, client, loginData?.name);
+      await printReceipt(
+        price,
+        client,
+        loginData?.name,
+        paymentType === 'expense'
+          ? TransactionType.expense
+          : TransactionType.retour,
+      );
       setHasPrintedForMerchant(true);
       setLoading(false);
     } else {
@@ -151,7 +158,14 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
         setLoading(true);
 
         try {
-          await printReceipt(price, client, loginData?.name);
+          await printReceipt(
+            price,
+            client,
+            loginData?.name,
+            paymentType === 'expense'
+              ? TransactionType.expense
+              : TransactionType.retour,
+          );
           const tId = setTimeout(() => {
             clearTimeout(tId);
             clearAllStates();
