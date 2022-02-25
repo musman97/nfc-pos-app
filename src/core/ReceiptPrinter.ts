@@ -14,13 +14,13 @@ export const printReceipt: (
     `[C]Receipt N.O: ${(Math.random() * 1000).toFixed(0)}\n` +
     `[C]${moment().format('DD/MM/YYYY hh:mm:ss A')}\n` +
     `[L]\n` +
-    '[C]================================\n' +
+    '[C]==============================\n' +
     '[L]\n' +
     `[L]${
       paymentType === TransactionType.expense ? 'Sale' : 'Retour'
     } Amount :[R]NAFL ${price}\n` +
     '[L]\n' +
-    '[C]================================\n' +
+    '[C]==============================\n' +
     '[L]\n' +
     "[L]<font size='tall'>Merchant :</font>\n" +
     `[L]${merchantName}\n` +
@@ -32,10 +32,11 @@ export const printReceipt: (
     "[L]<font size='tall'>Signature :</font>\n" +
     `[L]\n` +
     `[L]\n` +
-    `[C]--------------------------------\n` +
+    `[C]------------------------------\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
-    `[L]For questions or inquiries call customer service : +5999 767-1563`;
+    `[L]For questions or inquiries call customer service:\n` +
+    '[L]+5999 767-1563';
 
   console.log(textToBePrinted);
 
@@ -59,11 +60,11 @@ export const printDailyReceipt: (
     `[C]Receipt N.O: ${(Math.random() * 1000).toFixed(0)}\n` +
     `[C]${moment().format('DD/MM/YYYY hh:mm:ss A')}\n` +
     `[L]\n` +
-    '[C]================================\n' +
+    '[C]==============================\n' +
     '[L]\n' +
     listOfExpenses +
     '[L]\n' +
-    '[C]================================\n' +
+    '[C]==============================\n' +
     '[L]\n' +
     `[R]<b>Daily sales total :</b>[R]NAFL ${totalExpense}\n` +
     "[L]<font size='tall'>Merchant :</font>\n" +
@@ -73,10 +74,11 @@ export const printDailyReceipt: (
     "[L]<font size='tall'>Signature :</font>\n" +
     `[L]\n` +
     `[L]\n` +
-    `[C]--------------------------------\n` +
+    `[C]------------------------------\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
-    `[L]For questions or inquiries call customer service : +5999 767-1563`;
+    `[L]For questions or inquiries call customer service:\n` +
+    '[L]+5999 767-1563';
 
   console.log(textToBePrinted);
 
@@ -94,11 +96,11 @@ export const printBalance: (
     `[C]Receipt N.O: ${(Math.random() * 1000).toFixed(0)}\n` +
     `[C]${moment().format('DD/MM/YYYY hh:mm:ss A')}\n` +
     `[L]\n` +
-    '[C]================================\n' +
+    '[C]==============================\n' +
     '[L]\n' +
     `[L]Balance :[R]NAFL ${balance}\n` +
     '[L]\n' +
-    '[C]================================\n' +
+    '[C]==============================\n' +
     '[L]\n' +
     "[L]<font size='tall'>Merchant :</font>\n" +
     `[L]${merchantName}\n` +
@@ -110,10 +112,11 @@ export const printBalance: (
     "[L]<font size='tall'>Signature :</font>\n" +
     `[L]\n` +
     `[L]\n` +
-    `[C]--------------------------------\n` +
+    `[C]------------------------------\n` +
     `[L]\n` +
     `[L]Thank you for your purchase\n` +
-    `[L]For questions or inquiries call customer service : +5999 767-1563`;
+    `[L]For questions or inquiries call customer service:\n` +
+    '[L]+5999 767-1563';
 
   console.log(textToBePrinted);
 
