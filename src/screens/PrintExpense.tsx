@@ -142,8 +142,8 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
 
     if (price > maxAmount) {
       showAlert(
-        'Expense Limit Reached',
-        'The Expense amount exceeds your balance',
+        'Limit Reached',
+        'The amount entered exceeds the maximum amount',
       );
       return;
     }
