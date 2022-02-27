@@ -35,7 +35,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
     useState(false);
 
   const client: Client = route.params?.client;
-  const balance = route.params?.balance;
+  const maxAmount = route.params?.maxAmount;
   const issuanceHistoryId = route.params?.issuanceHistoryId;
   const pinCodeToVerify = route.params?.pinCode;
   const paybackPeriod = route.params?.paybackPeriod;
@@ -70,9 +70,9 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
 
     const transaction: Transaction = {
       Client_id: client.id,
-      ItemDescription: 'Expense',
+      ItemDescription: paymentType === 'expense' ? 'Expense' : 'Retour',
       Merchant_ID: loginData?.id,
-      IssuanceHistoryId: issuanceHistoryId,
+      issuancehistoryId: issuanceHistoryId,
       dateTime: moment().utc().toDate().toUTCString(),
       AmountUser: price,
       transactionType:
@@ -140,7 +140,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       return;
     }
 
-    if (price > balance) {
+    if (price > maxAmount) {
       showAlert(
         'Expense Limit Reached',
         'The Expense amount exceeds your balance',

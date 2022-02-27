@@ -43,7 +43,8 @@ import {
   showToast,
 } from '~/utils';
 
-const testCardNumber = 'K-0035';
+const testCardNumber = 'K-0218';
+console.log('Test Card Number: ', testCardNumber);
 
 export interface Props {
   navigation: HomeScreenNavProp;
@@ -120,6 +121,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setLoaderLoading(true);
 
     const issuanceHistoryRes = await doGetIssuanceHistory(cardNumber);
+    console.log('Issucance History: ', issuanceHistoryRes?.data);
 
     if (nfcTagScanningReason !== 'balance') {
       if (issuanceHistoryRes?.data) {
@@ -132,7 +134,11 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             name: issuanceHistoryRes.data?.clientName,
           },
           paybackPeriod: issuanceHistoryRes.data?.paybackPeriod,
-          balance: parseFloat(issuanceHistoryRes?.data?.Balance),
+          maxAmount: parseFloat(
+            nfcTagScanningReason === 'expense'
+              ? issuanceHistoryRes?.data?.Balance
+              : issuanceHistoryRes?.data?.Amount,
+          ),
           cardId: cardNumber,
           pinCode: issuanceHistoryRes.data.Pincode,
           issuanceHistoryId: issuanceHistoryRes?.data?.id,

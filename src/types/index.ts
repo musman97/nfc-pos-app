@@ -149,8 +149,8 @@ export enum TransactionType {
 export type Transaction = {
   Client_id: string;
   Merchant_ID: string;
-  IssuanceHistoryId: string;
-  ItemDescription: 'Expense';
+  issuancehistoryId: string;
+  ItemDescription: 'Expense' | 'Retour';
   dateTime: string;
   AmountUser: number;
   transactionType: TransactionType;
@@ -229,7 +229,7 @@ export type MainStackParamList = {
   [routeNames.PrintExpense]: {
     client: Client;
     paybackPeriod: number;
-    balance: number;
+    maxAmount: number;
     cardId: string;
     pinCode: string;
     issuanceHistoryId: string;
