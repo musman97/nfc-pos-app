@@ -150,25 +150,30 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       }
     } else {
       setLoaderLoading(false);
-      const balance = parseFloat(issuanceHistoryRes?.data?.Balance);
 
-      showPrintBalanceAlert(balance, async () => {
-        try {
-          await printBalance(
-            {
-              id: issuanceHistoryRes.data?.Client_id,
-              code: issuanceHistoryRes.data?.clientCode,
-              name: issuanceHistoryRes.data?.clientName,
-            },
-            loginData?.name,
-            balance,
-          );
-        } catch (error) {
-          console.log('Error printing Balance');
+      if (issuanceHistoryRes?.data) {
+        const balance = parseFloat(issuanceHistoryRes?.data?.Balance);
 
-          showToast(error.message);
-        }
-      });
+        showPrintBalanceAlert(balance, async () => {
+          try {
+            await printBalance(
+              {
+                id: issuanceHistoryRes.data?.Client_id,
+                code: issuanceHistoryRes.data?.clientCode,
+                name: issuanceHistoryRes.data?.clientName,
+              },
+              loginData?.name,
+              balance,
+            );
+          } catch (error) {
+            console.log('Error printing Balance');
+
+            showToast(error.message);
+          }
+        });
+      } else {
+        showToast(issuanceHistoryRes?.message);
+      }
     }
   }, [cardNumber, nfcTagScanningReason]);
 
