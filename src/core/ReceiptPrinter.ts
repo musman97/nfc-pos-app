@@ -56,7 +56,7 @@ export const printDailyReceipt: (
       return (
         prev +
         `[L]${curr.Client_id}: [R]NAFL ${
-          curr?.transactionType === TransactionType.retour ? '-' : ''
+          curr?.transactionType === TransactionType.retour ? '-' : ' '
         }${curr.AmountUser}\n`
       );
     }, '');
