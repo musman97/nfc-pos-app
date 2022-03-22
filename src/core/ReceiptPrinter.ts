@@ -48,7 +48,12 @@ export const printDailyReceipt: (
   merchantName: string,
 ) => Promise<void> = async (dailyTransactions, merchantName) => {
   const listOfExpenses = dailyTransactions.reduce((prev, curr) => {
-    return prev + `[L]${curr.Client_id}: [R]NAFL ${curr.AmountUser}\n`;
+    return (
+      prev +
+      `[L]${curr.Client_id}: [R]NAFL ${
+        curr?.transactionType === TransactionType.retour ? '-' : ''
+      }${curr.AmountUser}\n`
+    );
   }, '');
   const totalExpense = dailyTransactions
     .map(elm => elm.AmountUser)
