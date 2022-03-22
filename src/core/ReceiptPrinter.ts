@@ -47,17 +47,28 @@ export const printDailyReceipt: (
   dailyTransactions: Array<DailyTransaction>,
   merchantName: string,
 ) => Promise<void> = async (dailyTransactions, merchantName) => {
-  const listOfExpenses = dailyTransactions.reduce((prev, curr) => {
-    return (
-      prev +
-      `[L]${curr.Client_id}: [R]NAFL ${
-        curr?.transactionType === TransactionType.retour ? '-' : ''
-      }${curr.AmountUser}\n`
-    );
-  }, '');
+  const listOfExpenses = dailyTransactions
+    .sort(
+      (a, b) =>
+        new Date(a?.dateTime).getTime() - new Date(b?.dateTime).getTime(),
+    )
+    .reduce((prev, curr) => {
+      return (
+        prev +
+        `[L]${curr.Client_id}: [R]NAFL ${
+          curr?.transactionType === TransactionType.retour ? '-' : ''
+        }${curr.AmountUser}\n`
+      );
+    }, '');
   const totalExpense = dailyTransactions
-    .map(elm => elm.AmountUser)
-    .reduce((prev, curr) => prev + curr, 0);
+    .map(trx => trx?.AmountUser)
+    .reduce(
+      (prev, curr, idx) =>
+        dailyTransactions[idx].transactionType === TransactionType.expense
+          ? prev + curr
+          : prev - curr,
+      0,
+    );
 
   const textToBePrinted =
     "[C]<u><font size='big'>Norsa N.V.</font></u>\n" +
