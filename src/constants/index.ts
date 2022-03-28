@@ -10,7 +10,7 @@ export const mainEndpoints = {
   createTransactionHistory: 'transactionHistory/createTransactionHistory',
   getMerchantId: (userId: string) =>
     `auth/getMerchantIdForLoggedInUser/${userId}`,
-  getDailyTransactions: 'reports/totalSalesOfCurrentUser',
+  getDailyTransactions: 'transactionHistory/getMerchantsTodaysTransactions',
   getMerchantName: 'merchants/getMerchantNameByUserId',
 };
 

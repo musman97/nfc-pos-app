@@ -243,9 +243,9 @@ export const doGetDailyTransactions: () => Promise<GetDailyTransactionsResponse>
         AxiosResponse<GetDailyTransactionsApiResponse>
       >(mainEndpoints.getDailyTransactions);
 
-      if (response.status === 200) {
+      if (response.data?.message === 'success') {
         return {
-          data: response.data,
+          data: response.data?.data,
         };
       } else {
         return {
@@ -253,7 +253,7 @@ export const doGetDailyTransactions: () => Promise<GetDailyTransactionsResponse>
         };
       }
     } catch (error) {
-      console.log('Error getting daily transactions', error);
+      console.log('Error getting daily transactions');
 
       return {
         message: 'Something went wrong',
