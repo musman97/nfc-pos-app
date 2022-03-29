@@ -91,6 +91,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
         paymentType === 'expense'
           ? TransactionType.expense
           : TransactionType.retour,
+        paybackPeriod,
       );
       setHasPrintedForMerchant(true);
       setLoading(false);
@@ -165,6 +166,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
             paymentType === 'expense'
               ? TransactionType.expense
               : TransactionType.retour,
+            paybackPeriod,
           );
           const tId = setTimeout(() => {
             clearTimeout(tId);

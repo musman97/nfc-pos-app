@@ -7,7 +7,14 @@ export const printReceipt: (
   customer: Client,
   merchantName: string,
   paymentType: TransactionType,
-) => Promise<void> = async (price, customer, merchantName, paymentType) => {
+  paybackPeriod: number,
+) => Promise<void> = async (
+  price,
+  customer,
+  merchantName,
+  paymentType,
+  paybackPeriod,
+) => {
   const textToBePrinted =
     "[C]<u><font size='big'>Norsa N.V.</font></u>\n" +
     '[L]\n' +
@@ -22,6 +29,8 @@ export const printReceipt: (
     '[L]\n' +
     '[C]==============================\n' +
     '[L]\n' +
+    "[L]<font size='tall'>Payback period (months):</font>\n" +
+    `[L]${paybackPeriod}\n` +
     "[L]<font size='tall'>Merchant :</font>\n" +
     `[L]${merchantName}\n` +
     "[L]<font size='tall'>Customer :</font>\n" +
@@ -57,7 +66,10 @@ export const printDailyReceipt: (
         prev +
         `[L]${curr.Client_id}: [R]NAFL ${
           curr?.transactionType === TransactionType.retour ? '-' : ' '
-        }${curr.AmountUser}\n`
+        }${curr.AmountUser}\n` +
+        `[L]Payback period (months): [R]     ${
+          curr?.totalPaybackPeriods ?? 0
+        }\n`
       );
     }, '');
   const totalExpense = dailyTransactions
@@ -105,7 +117,8 @@ export const printBalance: (
   client: Client,
   merchantName: string,
   balance: number,
-) => Promise<void> = async (customer, merchantName, balance) => {
+  paybackPeriod: number,
+) => Promise<void> = async (customer, merchantName, balance, paybackPeriod) => {
   const textToBePrinted =
     "[C]<u><font size='big'>Norsa N.V.</font></u>\n" +
     '[L]\n' +
@@ -118,6 +131,8 @@ export const printBalance: (
     '[L]\n' +
     '[C]==============================\n' +
     '[L]\n' +
+    "[L]<font size='tall'>Payback period (months):</font>\n" +
+    `[L]${paybackPeriod}\n` +
     "[L]<font size='tall'>Merchant :</font>\n" +
     `[L]${merchantName}\n` +
     "[L]<font size='tall'>Customer :</font>\n" +
