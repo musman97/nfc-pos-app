@@ -43,7 +43,7 @@ import {
   showToast,
 } from '~/utils';
 
-const testCardNumber = 'K-0035';
+const testCardNumber = 'K-0002';
 console.log('Test Card Number: ', testCardNumber);
 
 export interface Props {
@@ -164,6 +164,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
               },
               loginData?.name,
               balance,
+              issuanceHistoryRes?.data?.paybackPeriod ?? 0,
             );
           } catch (error) {
             console.log('Error printing Balance');
@@ -216,9 +217,9 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
-      // setCardNumber(testCardNumber);
-      // setScanningStatus('success');
-      showBottomModal();
+      setCardNumber(testCardNumber);
+      setScanningStatus('success');
+      // showBottomModal();
     }
   }, [dailyReportPrintedDate]);
 
@@ -228,9 +229,9 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
-      // setCardNumber(testCardNumber);
-      // setScanningStatus('success');
-      showBottomModal();
+      setCardNumber(testCardNumber);
+      setScanningStatus('success');
+      // showBottomModal();
     }
   }, [dailyReportPrintedDate]);
 
@@ -240,9 +241,9 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     if (checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
-      // setCardNumber(testCardNumber);
-      // setScanningStatus('success');
-      showBottomModal();
+      setCardNumber(testCardNumber);
+      setScanningStatus('success');
+      // showBottomModal();
     }
   }, [dailyReportPrintedDate]);
 
