@@ -164,6 +164,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
               },
               loginData?.name,
               balance,
+              issuanceHistoryRes?.data?.paybackPeriod ?? 0,
             );
           } catch (error) {
             console.log('Error printing Balance');
