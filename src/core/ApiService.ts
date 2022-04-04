@@ -253,7 +253,7 @@ export const doGetDailyTransactions: () => Promise<GetDailyTransactionsResponse>
         };
       }
     } catch (error) {
-      console.log('Error getting daily transactions');
+      console.log('Error getting daily transactions', error);
 
       return {
         message: 'Something went wrong',

@@ -185,6 +185,8 @@ export type DailyTransaction = {
   dateTime?: string;
   AmountUser?: number;
   issuancehistoryId?: string;
+  transactionType?: number;
+  totalPaybackPeriods?: number;
 };
 
 export type GetDailyTransactionsApiResponse = {
