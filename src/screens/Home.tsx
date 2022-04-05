@@ -43,7 +43,7 @@ import {
   showToast,
 } from '~/utils';
 
-const testCardNumber = 'K-0002';
+const testCardNumber = '0002';
 console.log('Test Card Number: ', testCardNumber);
 
 export interface Props {
