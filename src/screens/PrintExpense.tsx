@@ -20,6 +20,9 @@ import {
 } from '~/types';
 import {isValidFloatNumber, showAlert, showToast} from '~/utils';
 
+const merchantPinCodeModalText = 'Please Enter the Merchant Pin code';
+const defaultPinCodeModalText = 'Please Enter the Pin Code to Verify Nfc Card';
+
 export interface Props extends AddItemsScreeProps {}
 
 const PrintExpense: FC<Props> = ({route, navigation}) => {
@@ -28,6 +31,8 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   const [expensePrice, setExpensePrice] = useState('');
   const [pinCode, setPinCode] = useState('');
   const [hasPrintedForMerchant, setHasPrintedForMerchant] = useState(false);
+  const [hasMerchantPincodeVerified, setHasMerchantPincodeVerified] =
+    useState(false);
   const [hasPinCodeVerified, setHasPinCodeVerified] = useState(false);
   const [disableInput, setDisableInput] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,6 +45,14 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   const pinCodeToVerify = route.params?.pinCode;
   const paybackPeriod = route.params?.paybackPeriod;
   const paymentType = route.params?.paymentType;
+
+  const getModalText = useCallback(() => {
+    if (paymentType === 'retour' && !hasMerchantPincodeVerified) {
+      return merchantPinCodeModalText;
+    } else {
+      return defaultPinCodeModalText;
+    }
+  }, [hasMerchantPincodeVerified, paymentType]);
 
   const clearAllStates = useCallback(() => {
     setExpensePrice('');
@@ -103,18 +116,27 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
   };
 
   const onSubmitButtonPressed = useCallback(async () => {
-    if (pinCode === pinCodeToVerify) {
-      setHasPinCodeVerified(true);
-      hideConfirmationModal();
-
-      setLoading(true);
-      const price = parseFloat(expensePrice.trim());
-
-      await printForMerchant(price);
+    if (paymentType === 'retour' && !hasMerchantPincodeVerified) {
+      if (pinCode === loginData?.pinCode) {
+        setHasMerchantPincodeVerified(true);
+        setPinCode('');
+      } else {
+        showToast('Pin Code entered is incorrect');
+      }
     } else {
-      showToast('Pin Code entered is incorrect');
+      if (pinCode === pinCodeToVerify) {
+        setHasPinCodeVerified(true);
+        hideConfirmationModal();
+
+        setLoading(true);
+        const price = parseFloat(expensePrice.trim());
+
+        await printForMerchant(price);
+      } else {
+        showToast('Pin Code entered is incorrect');
+      }
     }
-  }, [pinCode]);
+  }, [pinCode, paymentType, hasMerchantPincodeVerified]);
 
   const onSaveAndPrintReceiptPressed = useCallback(async () => {
     Keyboard.dismiss();
@@ -247,9 +269,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
         visible={isConfirmationModalShown}
         onBackDropPressed={hideConfirmationModal}>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalText}>
-            Please Enter the Pin Code to Verify Nfc Card
-          </Text>
+          <Text style={styles.modalText}>{getModalText()}</Text>
           <TextInput
             style={[styles.input, styles.modalInput]}
             value={pinCode}
