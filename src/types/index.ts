@@ -55,6 +55,7 @@ export type LoginData = {
   isAdmin?: number;
   expiryDate?: number;
   name?: string;
+  pinCode?: string;
 };
 
 export type LoginApiRequest = {
