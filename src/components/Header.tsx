@@ -1,23 +1,24 @@
+import {useNavigation} from '@react-navigation/native';
 import React, {FC, useCallback} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   StyleProp,
-  ViewStyle,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {Colors} from '~/styles';
-import {Icons} from './index';
 import {useAuthContext} from '~/context/AuthContext';
 import {routeNames} from '~/navigation/routeNames';
-import {HomeScreenNavProp, MainStackParamList} from '~/types';
+import {Colors} from '~/styles';
+import {HomeScreenNavProp} from '~/types';
+import {showAlertWithTwoButtons, noop} from './../utils/index';
+import {Icons} from './index';
 
 export interface Props {
   style?: StyleProp<ViewStyle>;
@@ -40,6 +41,17 @@ const Header: FC<Props> = ({
 
   const onBackPressed = useCallback(() => {
     navigation.goBack();
+  }, []);
+
+  const onLogoutPressed = useCallback(() => {
+    showAlertWithTwoButtons(
+      'Logout',
+      'Are you sure you want to logout?',
+      'No',
+      'Yes',
+      noop,
+      logout,
+    );
   }, []);
 
   const onSettingsIconPressed = useCallback(() => {
@@ -71,7 +83,7 @@ const Header: FC<Props> = ({
           </TouchableOpacity>
         ) : null}
         {hasLogoutButton ? (
-          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={onLogoutPressed}>
             <Icons.MaterialIcons
               name="logout"
               size={responsiveFontSize(4)}

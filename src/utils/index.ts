@@ -68,6 +68,27 @@ export const showPrintBalanceAlert: (
   ]);
 };
 
+export const showAlertWithTwoButtons: (
+  title: string,
+  message: string,
+  firstButtonText: string,
+  secondButtonText: string,
+  onFirstButtonPressed: () => void,
+  secondButtonPressed: () => void,
+) => void = (
+  title,
+  message,
+  firstButtonText,
+  secondButtonText,
+  onFirstButtonPressed,
+  onSecondButtonPressed,
+) => {
+  Alert.alert(title, message, [
+    {text: firstButtonText, onPress: onFirstButtonPressed},
+    {text: secondButtonText, onPress: onSecondButtonPressed},
+  ]);
+};
+
 export const getCurrentUtcTimestamp = () => moment.utc().toISOString();
 
 export const getLocalTimestamp = (utcTimestamp: string) =>
