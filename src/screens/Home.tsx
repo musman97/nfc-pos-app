@@ -19,6 +19,7 @@ import {useAuthContext} from '~/context/AuthContext';
 import {doGetDailyTransactions, doGetIssuanceHistory} from '~/core/ApiService';
 import {
   getDailyReportPrintedDate,
+  getPreviousPrintedReceipt,
   setDailyReportPrintedDate as setStorageDailyReportPrintedDate,
 } from '~/core/LocalStorageService';
 import {
@@ -35,6 +36,7 @@ import {
   NfcTagOperationStatus,
   NfcTagScanningReason,
 } from '~/types';
+import {printText} from './../core/ReceiptPrinter';
 import {
   getCurrentUtcTimestamp,
   getLocalTimestamp,
@@ -55,6 +57,8 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
 
   const [loading, setLoading] = useState(false);
   const [dailyReceiptPrintLoading, setDailyReceiptPrintLoading] =
+    useState(false);
+  const [printPreviousReceiptLoading, setPrintPreviousReceiptLoading] =
     useState(false);
   const [dailyReportPrintedDate, setDailyReportPrintedDate] = useState('');
   const [bottomModalShown, setBottomModalShown] = useState(false);
@@ -235,6 +239,29 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, [dailyReportPrintedDate]);
 
+  const onPrintPreviousPrintedReceipt = useCallback(async () => {
+    setPrintPreviousReceiptLoading(true);
+
+    if (checkIfNeedToPrintDailyReport()) {
+      showPrintDailyReportAlert();
+    } else {
+      try {
+        const previousReceipt = await getPreviousPrintedReceipt();
+
+        if (previousReceipt !== null) {
+          await printText(previousReceipt);
+        } else {
+          showToast('There is no previous receipt');
+        }
+      } catch (error) {
+        console.log('Error printing previous printed receipt');
+        showToast(error.message);
+      }
+    }
+
+    setPrintPreviousReceiptLoading(false);
+  }, [dailyReportPrintedDate]);
+
   const onScanNfcForBalance = useCallback(() => {
     setNfcTagScanningReason('balance');
 
@@ -338,6 +365,12 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             title="Print Daily Receipt"
             style={styles.scanNfcBtn}
             onPress={onPrintDailyReceiptPressed}
+          />
+          <Button
+            loading={printPreviousReceiptLoading}
+            title="Print Previous Receipt"
+            style={styles.scanNfcBtn}
+            onPress={onPrintPreviousPrintedReceipt}
           />
           <Button
             title="Show Balance"
