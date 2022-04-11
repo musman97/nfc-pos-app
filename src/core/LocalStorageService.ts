@@ -72,14 +72,6 @@ export const setLoginData: (
   }
 };
 
-export const clearLoginData: () => Promise<void> = async () => {
-  try {
-    await AsyncStorage.multiRemove(await AsyncStorage.getAllKeys());
-  } catch (error) {
-    console.log('Error clearing login data', error);
-  }
-};
-
 export const setDailyReportPrintedDate: (
   date: string,
 ) => Promise<void> = async date => {
@@ -103,5 +95,42 @@ export const getDailyReportPrintedDate: () => Promise<
     console.log('Error getting daily report printed date', error);
 
     return null;
+  }
+};
+
+export const getPreviousPrintedReceipt: () => Promise<
+  string | null
+> = async () => {
+  try {
+    const previousPrintedReceipt = await AsyncStorage.getItem(
+      asyncStorageKeys.previousPrintedReceipt,
+    );
+
+    return previousPrintedReceipt;
+  } catch (error) {
+    console.log('Error getting previous printed receipt', error);
+
+    return null;
+  }
+};
+
+export const setPreviousPrintedReceipt: (
+  previousPrintedReceipt: string,
+) => Promise<void> = async previousPrintedReceipt => {
+  try {
+    await AsyncStorage.setItem(
+      asyncStorageKeys.previousPrintedReceipt,
+      previousPrintedReceipt,
+    );
+  } catch (error) {
+    console.log('Error setting previous printed receipt', error);
+  }
+};
+
+export const clearLoginData: () => Promise<void> = async () => {
+  try {
+    await AsyncStorage.multiRemove(await AsyncStorage.getAllKeys());
+  } catch (error) {
+    console.log('Error clearing login data', error);
   }
 };
