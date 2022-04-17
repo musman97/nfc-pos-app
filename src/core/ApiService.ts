@@ -3,8 +3,11 @@ import {authEndpoints, BASE_URL, mainEndpoints} from '~/constants';
 import {
   CreateTransactionHistoryApiResponse,
   CreateTransactionHistoryResponse,
+  DailySalesPrintCheck,
   GetClientApiResponse,
   GetClientResponse,
+  GetDailySalesPrintCheckApiResponse,
+  GetDailySalesPrintCheckResponse,
   GetDailyTransactionsApiResponse,
   GetDailyTransactionsResponse,
   GetIssuanceHistoryApiRequest,
@@ -17,6 +20,8 @@ import {
   LoginApiResponse,
   LoginResponse,
   MerchantNameApiResponse,
+  PostDailySalesPrintCheckApiResponse,
+  PostDailySalesPrintCheckResponse,
   Transaction,
 } from '~/types';
 import {getAuthToken} from './LocalStorageService';
@@ -260,3 +265,51 @@ export const doGetDailyTransactions: () => Promise<GetDailyTransactionsResponse>
       };
     }
   };
+
+export const doGetDailySalesPrintCheck: (
+  merchantId: string,
+) => Promise<GetDailySalesPrintCheckResponse> = async merchantId => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader();
+
+    const response = await axios.get<GetDailySalesPrintCheckApiResponse>(
+      mainEndpoints.getDailySalesPrintCheck(merchantId),
+    );
+
+    return response?.data;
+  } catch (error) {
+    console.log('Error getting daily sales print check: ', error);
+
+    return {
+      message: 'Something went wrong',
+    };
+  }
+};
+
+export const doPostDailySalesPrintCheck: (
+  merchantId: string,
+  dailySalesPrintCheck: DailySalesPrintCheck,
+) => Promise<PostDailySalesPrintCheckResponse> = async (
+  merchantId,
+  dailySalesPrintCheck,
+) => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader();
+
+    const response = await axios.post<
+      PostDailySalesPrintCheckApiResponse,
+      AxiosResponse<PostDailySalesPrintCheckApiResponse, DailySalesPrintCheck>,
+      DailySalesPrintCheck
+    >(mainEndpoints.postDailySalesPrintCheck(merchantId), dailySalesPrintCheck);
+
+    return {
+      success: response.data?.success,
+    };
+  } catch (error) {
+    console.log('Error posting daily sales print check: ', error);
+
+    return {
+      message: 'Something went wrong',
+    };
+  }
+};

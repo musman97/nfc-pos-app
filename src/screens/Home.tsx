@@ -16,7 +16,11 @@ import {
 import {Button, Header, Icons, Loader, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
 import {useAuthContext} from '~/context/AuthContext';
-import {doGetDailyTransactions, doGetIssuanceHistory} from '~/core/ApiService';
+import {
+  doGetDailyTransactions,
+  doGetIssuanceHistory,
+  doPostDailySalesPrintCheck,
+} from '~/core/ApiService';
 import {
   getDailyReportPrintedDate,
   getPreviousPrintedReceipt,
@@ -37,9 +41,9 @@ import {
   NfcTagScanningReason,
 } from '~/types';
 import {printText} from './../core/ReceiptPrinter';
+import {doGetDailySalesPrintCheck} from './../core/ApiService';
 import {
   getCurrentUtcTimestamp,
-  getLocalTimestamp,
   showPrintBalanceAlert,
   showPrintDailyReportAlert,
   showToast,
@@ -93,13 +97,17 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, [scanningStatus]);
 
-  const checkIfNeedToPrintDailyReport = useCallback(() => {
-    if (dailyReportPrintedDate === '') {
-      return true;
+  const checkIfNeedToPrintDailyReport = useCallback(async () => {
+    setLoaderLoading(true);
+    const apiResponse = await doGetDailySalesPrintCheck(loginData?.Merchant_ID);
+    setLoaderLoading(false);
+
+    if (apiResponse && apiResponse?.status) {
+      return false;
     } else {
-      return moment().isAfter(getLocalTimestamp(dailyReportPrintedDate), 'day');
+      return true;
     }
-  }, [dailyReportPrintedDate]);
+  }, []);
 
   const readTag = useCallback(async () => {
     try {
@@ -215,10 +223,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setBottomModalShown(false);
   }, []);
 
-  const onScanNfcPressed = useCallback(() => {
+  const onScanNfcPressed = useCallback(async () => {
     setNfcTagScanningReason('expense');
 
-    if (checkIfNeedToPrintDailyReport()) {
+    if (await checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
       // setCardNumber(testCardNumber);
@@ -227,10 +235,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, [dailyReportPrintedDate]);
 
-  const onScanNfcForRetourPressed = useCallback(() => {
+  const onScanNfcForRetourPressed = useCallback(async () => {
     setNfcTagScanningReason('retour');
 
-    if (checkIfNeedToPrintDailyReport()) {
+    if (await checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
       // setCardNumber(testCardNumber);
@@ -242,7 +250,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const onPrintPreviousPrintedReceipt = useCallback(async () => {
     setPrintPreviousReceiptLoading(true);
 
-    if (checkIfNeedToPrintDailyReport()) {
+    if (await checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
       try {
@@ -262,10 +270,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setPrintPreviousReceiptLoading(false);
   }, [dailyReportPrintedDate]);
 
-  const onScanNfcForBalance = useCallback(() => {
+  const onScanNfcForBalance = useCallback(async () => {
     setNfcTagScanningReason('balance');
 
-    if (checkIfNeedToPrintDailyReport()) {
+    if (await checkIfNeedToPrintDailyReport()) {
       showPrintDailyReportAlert();
     } else {
       // setCardNumber(testCardNumber);
@@ -280,22 +288,24 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     const apiResponse = await doGetDailyTransactions();
 
     if (apiResponse.data) {
-      if (apiResponse.data.length === 0) {
-        const currentUtcTimeStamp = getCurrentUtcTimestamp();
-        await setStorageDailyReportPrintedDate(currentUtcTimeStamp);
-        setDailyReportPrintedDate(currentUtcTimeStamp);
+      const currentUtcTimeStamp = getCurrentUtcTimestamp();
 
+      if (apiResponse.data.length === 0) {
         showToast('There are no transactions to be printed');
         setDailyReceiptPrintLoading(false);
+        await doPostDailySalesPrintCheck(loginData.Merchant_ID, {
+          status: true,
+          datePrinted: currentUtcTimeStamp,
+        });
         return;
       }
 
       try {
         await printDailyReceipt(apiResponse.data, loginData?.name);
-
-        const currentUtcTimeStamp = getCurrentUtcTimestamp();
-        await setStorageDailyReportPrintedDate(currentUtcTimeStamp);
-        setDailyReportPrintedDate(currentUtcTimeStamp);
+        await doPostDailySalesPrintCheck(loginData.Merchant_ID, {
+          status: true,
+          datePrinted: currentUtcTimeStamp,
+        });
       } catch (error) {
         console.log('Error printing daily Receipt');
         showToast(error.message);
