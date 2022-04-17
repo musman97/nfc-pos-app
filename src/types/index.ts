@@ -56,6 +56,7 @@ export type LoginData = {
   expiryDate?: number;
   name?: string;
   pinCode?: string;
+  Merchant_ID?: string;
 };
 
 export type LoginApiRequest = {
@@ -201,6 +202,33 @@ export type GetDailyTransactionsSuccessResponse = {
 
 export type GetDailyTransactionsResponse = GetDailyTransactionsSuccessResponse &
   GeneralFailureResponse;
+
+export type GetDailySalesPrintCheckApiSuccessResponse = {
+  id?: string;
+  status?: number;
+  datePrinted?: string;
+  merchantId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type GetDailySalesPrintCheckApiResponse =
+  GetDailySalesPrintCheckApiSuccessResponse | null;
+
+export type GetDailySalesPrintCheckResponse =
+  GetDailySalesPrintCheckApiResponse & GeneralFailureResponse;
+
+export type DailySalesPrintCheck = {
+  status: boolean;
+  datePrinted: string;
+};
+
+export type PostDailySalesPrintCheckApiResponse = {
+  success?: boolean;
+};
+
+export type PostDailySalesPrintCheckResponse =
+  PostDailySalesPrintCheckApiResponse & GeneralFailureResponse;
 
 // Context
 
