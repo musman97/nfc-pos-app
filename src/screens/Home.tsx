@@ -3,6 +3,7 @@ import React, {FC, useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -48,6 +49,7 @@ import {
   showPrintDailyReportAlert,
   showToast,
 } from '~/utils';
+import {logo} from '~/assets/images';
 
 const testCardNumber = 'K-0035';
 console.log('Test Card Number: ', testCardNumber);
@@ -352,13 +354,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       <Header title="Home" hasLogoutButton hasSettingsButton />
       <View style={styles.f1}>
         <View style={styles.contentContainer}>
-          <View style={styles.nfcIconWrapper}>
-            <Icons.MaterialIcons
-              name="nfc"
-              color={Colors.primary}
-              size={responsiveWidth(55)}
-            />
-          </View>
+          <Image source={logo} style={styles.logo} />
           <Button
             title="Expense"
             style={styles.scanNfcBtn}
@@ -423,6 +419,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     borderRadius: responsiveWidth(50) / 20,
     padding: responsiveWidth(2),
+  },
+  logo: {
+    height: responsiveWidth(40),
+    width: responsiveWidth(40),
   },
   scanNfcBtn: {
     marginTop: responsiveHeight(4),
