@@ -22,10 +22,7 @@ import {
   doGetIssuanceHistory,
   doPostDailySalesPrintCheck,
 } from '~/core/ApiService';
-import {
-  getDailyReportPrintedDate,
-  getPreviousPrintedReceipt,
-} from '~/core/LocalStorageService';
+import {getPreviousPrintedReceipt} from '~/core/LocalStorageService';
 import {
   checkIfNfcEnabled,
   cleanUpReadingListners,
