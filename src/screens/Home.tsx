@@ -1,4 +1,3 @@
-import moment from 'moment';
 import React, {FC, useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
@@ -14,6 +13,7 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+import {logo} from '~/assets/images';
 import {Button, Header, Icons, Loader, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
 import {useAuthContext} from '~/context/AuthContext';
@@ -25,7 +25,6 @@ import {
 import {
   getDailyReportPrintedDate,
   getPreviousPrintedReceipt,
-  setDailyReportPrintedDate as setStorageDailyReportPrintedDate,
 } from '~/core/LocalStorageService';
 import {
   checkIfNfcEnabled,
@@ -41,15 +40,12 @@ import {
   NfcTagOperationStatus,
   NfcTagScanningReason,
 } from '~/types';
-import {printText} from './../core/ReceiptPrinter';
-import {doGetDailySalesPrintCheck} from './../core/ApiService';
 import {
   getCurrentUtcTimestamp,
   showPrintBalanceAlert,
-  showPrintDailyReportAlert,
   showToast,
 } from '~/utils';
-import {logo} from '~/assets/images';
+import {printText} from './../core/ReceiptPrinter';
 
 const testCardNumber = '0002';
 console.log('Test Card Number: ', testCardNumber);
@@ -66,7 +62,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     useState(false);
   const [printPreviousReceiptLoading, setPrintPreviousReceiptLoading] =
     useState(false);
-  const [dailyReportPrintedDate, setDailyReportPrintedDate] = useState('');
   const [bottomModalShown, setBottomModalShown] = useState(false);
   const [scanningStatus, setScanningStatus] =
     useState<NfcTagOperationStatus>('scanning');
@@ -81,12 +76,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       try {
         await initNfcManager();
         console.log('Nfc Manager Init');
-        const date = await getDailyReportPrintedDate();
-
-        if (date) {
-          console.log('Daily Report Printed date: ', date);
-          setDailyReportPrintedDate(date);
-        }
       } catch (error) {
         console.log('Error Initializing Nfc Manager');
       }
@@ -98,18 +87,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       onReadNfcTagSuccess();
     }
   }, [scanningStatus]);
-
-  const checkIfNeedToPrintDailyReport = useCallback(async () => {
-    setLoaderLoading(true);
-    const apiResponse = await doGetDailySalesPrintCheck(loginData?.Merchant_ID);
-    setLoaderLoading(false);
-
-    if (apiResponse && apiResponse?.status) {
-      return false;
-    } else {
-      return true;
-    }
-  }, []);
 
   const readTag = useCallback(async () => {
     try {
@@ -226,63 +203,44 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   }, []);
 
   const onScanNfcPressed = useCallback(async () => {
+    // setCardNumber(testCardNumber);
+    // setScanningStatus('success');
     setNfcTagScanningReason('expense');
-
-    if (await checkIfNeedToPrintDailyReport()) {
-      showPrintDailyReportAlert();
-    } else {
-      setCardNumber(testCardNumber);
-      setScanningStatus('success');
-      // showBottomModal();
-    }
-  }, [dailyReportPrintedDate]);
+    showBottomModal();
+  }, []);
 
   const onScanNfcForRetourPressed = useCallback(async () => {
+    // setCardNumber(testCardNumber);
+    // setScanningStatus('success');
     setNfcTagScanningReason('retour');
-
-    if (await checkIfNeedToPrintDailyReport()) {
-      showPrintDailyReportAlert();
-    } else {
-      setCardNumber(testCardNumber);
-      setScanningStatus('success');
-      // showBottomModal();
-    }
-  }, [dailyReportPrintedDate]);
+    showBottomModal();
+  }, []);
 
   const onPrintPreviousPrintedReceipt = useCallback(async () => {
     setPrintPreviousReceiptLoading(true);
 
-    if (await checkIfNeedToPrintDailyReport()) {
-      showPrintDailyReportAlert();
-    } else {
-      try {
-        const previousReceipt = await getPreviousPrintedReceipt();
+    try {
+      const previousReceipt = await getPreviousPrintedReceipt();
 
-        if (previousReceipt !== null) {
-          await printText(previousReceipt);
-        } else {
-          showToast('There is no previous receipt');
-        }
-      } catch (error) {
-        console.log('Error printing previous printed receipt');
-        showToast(error.message);
+      if (previousReceipt !== null) {
+        await printText(previousReceipt);
+      } else {
+        showToast('There is no previous receipt');
       }
+    } catch (error) {
+      console.log('Error printing previous printed receipt');
+      showToast(error.message);
     }
 
     setPrintPreviousReceiptLoading(false);
-  }, [dailyReportPrintedDate]);
+  }, []);
 
   const onScanNfcForBalance = useCallback(async () => {
+    // setCardNumber(testCardNumber);
+    // setScanningStatus('success');
     setNfcTagScanningReason('balance');
-
-    if (await checkIfNeedToPrintDailyReport()) {
-      showPrintDailyReportAlert();
-    } else {
-      setCardNumber(testCardNumber);
-      setScanningStatus('success');
-      // showBottomModal();
-    }
-  }, [dailyReportPrintedDate]);
+    showBottomModal();
+  }, []);
 
   const onPrintDailyReceiptPressed = useCallback(async () => {
     setDailyReceiptPrintLoading(true);
@@ -367,12 +325,6 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             onPress={onScanNfcForRetourPressed}
           />
           <Button
-            loading={dailyReceiptPrintLoading}
-            title="Print Daily Receipt"
-            style={styles.scanNfcBtn}
-            onPress={onPrintDailyReceiptPressed}
-          />
-          <Button
             loading={printPreviousReceiptLoading}
             title="Print Previous Receipt"
             style={styles.scanNfcBtn}
@@ -382,6 +334,12 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             title="Show Balance"
             style={styles.scanNfcBtn}
             onPress={onScanNfcForBalance}
+          />
+          <Button
+            loading={dailyReceiptPrintLoading}
+            title="Print Daily Receipt"
+            style={styles.scanNfcBtn}
+            onPress={onPrintDailyReceiptPressed}
           />
         </View>
       </View>
