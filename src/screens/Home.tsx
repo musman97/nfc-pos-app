@@ -203,17 +203,17 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   }, []);
 
   const onScanNfcPressed = useCallback(async () => {
-    // setCardNumber(testCardNumber);
-    // setScanningStatus('success');
     setNfcTagScanningReason('expense');
-    showBottomModal();
+    setCardNumber(testCardNumber);
+    setScanningStatus('success');
+    // showBottomModal();
   }, []);
 
   const onScanNfcForRetourPressed = useCallback(async () => {
-    // setCardNumber(testCardNumber);
-    // setScanningStatus('success');
     setNfcTagScanningReason('retour');
-    showBottomModal();
+    setCardNumber(testCardNumber);
+    setScanningStatus('success');
+    // showBottomModal();
   }, []);
 
   const onPrintPreviousPrintedReceipt = useCallback(async () => {
@@ -236,10 +236,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   }, []);
 
   const onScanNfcForBalance = useCallback(async () => {
-    // setCardNumber(testCardNumber);
-    // setScanningStatus('success');
+    setCardNumber(testCardNumber);
     setNfcTagScanningReason('balance');
-    showBottomModal();
+    setScanningStatus('success');
+    // showBottomModal();
   }, []);
 
   const onPrintDailyReceiptPressed = useCallback(async () => {
