@@ -97,13 +97,17 @@ export const printDailyReceipt: (
     `[C]Receipt N.O: ${(Math.random() * 1000).toFixed(0)}\n` +
     `[C]${moment().format('DD/MM/YYYY hh:mm:ss A')}\n` +
     `[L]\n` +
+    '[C]------------------------------\n' +
+    `[L]\n` +
+    `[C]<b>Daily sales</b>\n` +
+    `[L]\n` +
     '[C]==============================\n' +
     '[L]\n' +
     listOfExpenses +
     '[L]\n' +
     '[C]==============================\n' +
     '[L]\n' +
-    `[R]<b>Daily sales total :</b>[R]NAFL ${totalExpense}\n` +
+    `[R]<b>Total :</b>[R]NAFL ${totalExpense}\n` +
     "[L]<font size='tall'>Merchant :</font>\n" +
     `[L]${merchantName}\n` +
     `[L]\n` +
