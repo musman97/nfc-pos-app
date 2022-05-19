@@ -3,6 +3,11 @@ import {routeNames} from '~/navigation/routeNames';
 
 // Common
 
+export type PickerItem = {
+  title: string;
+  value: string;
+};
+
 export type PrinterConfig = {
   printerDpi: number;
   printerWidthMM: number;
