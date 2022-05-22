@@ -273,6 +273,7 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
           <TextInput
             style={[styles.input, styles.modalInput]}
             value={pinCode}
+            secureTextEntry
             placeholder="Pin Code"
             onChangeText={setPinCode}
             keyboardType="numeric"
