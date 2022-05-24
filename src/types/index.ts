@@ -41,6 +41,8 @@ export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
 export type NfcTagScanningReason = 'expense' | 'balance' | 'retour';
 
+export type AppMode = 'debug' | 'expense' | 'retour';
+
 // Api Requests and Responses
 
 export type GeneralFailureResponse = {

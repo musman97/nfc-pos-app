@@ -17,6 +17,7 @@ import {
 import {logo} from '~/assets/images';
 import {Button, Header, Icons, Loader, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
+import {appModes} from '~/constants';
 import {useAuthContext} from '~/context/AuthContext';
 import {
   doGetDailyTransactions,
@@ -327,12 +328,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, [scanningStatus]);
 
-  return (
-    <ScreenContainer>
-      <Header title="Home" hasLogoutButton hasSettingsButton />
-      <View style={styles.f1}>
-        <View style={styles.contentContainer}>
-          <Image source={logo} style={styles.logo} />
+  const renderButtons = useCallback(() => {
+    if (appModes === 'debug') {
+      return (
+        <>
           <Button
             title="Expense"
             style={styles.scanNfcBtn}
@@ -344,6 +343,39 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             style={styles.scanNfcBtn}
             onPress={onScanNfcForRetourPressed}
           />
+        </>
+      );
+    } else if (appModes === 'expense') {
+      return (
+        <>
+          <Button
+            title="Expense"
+            style={styles.scanNfcBtn}
+            loading={loading}
+            onPress={onScanNfcPressed}
+          />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Button
+            title="Retour"
+            style={styles.scanNfcBtn}
+            onPress={onScanNfcForRetourPressed}
+          />
+        </>
+      );
+    }
+  }, []);
+
+  return (
+    <ScreenContainer>
+      <Header title="Home" hasLogoutButton hasSettingsButton />
+      <View style={styles.f1}>
+        <View style={styles.contentContainer}>
+          <Image source={logo} style={styles.logo} />
+          {renderButtons()}
           <Button
             loading={printPreviousReceiptLoading}
             title="Print Previous Receipt"

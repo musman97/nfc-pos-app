@@ -1,3 +1,5 @@
+import {AppMode} from '~/types';
+
 export const BASE_URL = 'https://norsabackend.herokuapp.com/api/';
 
 export const authEndpoints = {
@@ -24,3 +26,5 @@ export const asyncStorageKeys = {
   printerDefaultConfig: 'KEY_PRINTER_DEFAULT_CONFIG',
   previousPrintedReceipt: 'KEY_PREVIOUS_PRINTED_RECEIPT',
 };
+
+export const appModes: AppMode = 'debug';
