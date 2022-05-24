@@ -329,7 +329,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   }, [scanningStatus]);
 
   const renderButtons = useCallback(() => {
-    if (appModes === 'debug') {
+    if (appModes === 'expense-retour') {
       return (
         <>
           <Button
