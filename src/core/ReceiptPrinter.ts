@@ -33,7 +33,7 @@ export const printReceipt: (
     '[L]\n' +
     `[L]${
       paymentType === TransactionType.expense ? 'Sale' : 'Retour'
-    } Amount :[R]NAFL ${price}\n` +
+    } Amount :[R]NAFL ${price.toFixed(2)}\n` +
     '[L]\n' +
     '[C]==============================\n' +
     '[L]\n' +
@@ -75,7 +75,7 @@ export const printDailyReceipt: (
         prev +
         `[L]${curr.Client_id}: [R]NAFL ${
           curr?.transactionType === TransactionType.retour ? '-' : ' '
-        }${curr.AmountUser}\n` +
+        }${curr.AmountUser.toFixed(2)}\n` +
         `[L]Payback period (months): [R]     ${
           curr?.totalPaybackPeriods ?? 0
         }\n`
@@ -89,7 +89,8 @@ export const printDailyReceipt: (
           ? prev + curr
           : prev - curr,
       0,
-    );
+    )
+    .toFixed(2);
 
   const textToBePrinted =
     "[C]<u><font size='big'>Norsa N.V.</font></u>\n" +
@@ -129,10 +130,17 @@ export const printDailyReceipt: (
 
 export const printBalance: (
   client: Client,
+  cardNumber: string,
   merchantName: string,
   balance: number,
   paybackPeriod: number,
-) => Promise<void> = async (customer, merchantName, balance, paybackPeriod) => {
+) => Promise<void> = async (
+  customer,
+  cardNumber,
+  merchantName,
+  balance,
+  paybackPeriod,
+) => {
   const textToBePrinted =
     "[C]<u><font size='big'>Norsa N.V.</font></u>\n" +
     '[L]\n' +
@@ -141,7 +149,8 @@ export const printBalance: (
     `[L]\n` +
     '[C]==============================\n' +
     '[L]\n' +
-    `[L]Balance :[R]NAFL ${balance}\n` +
+    `[L]Balance :[R]NAFL ${balance.toFixed(2)}\n` +
+    `[L]Card Number :[R]     ${cardNumber}\n` +
     '[L]\n' +
     '[C]==============================\n' +
     '[L]\n' +

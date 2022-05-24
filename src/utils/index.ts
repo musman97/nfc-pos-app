@@ -54,18 +54,25 @@ export const showPrintDailyReportAlert = () => {
 
 export const showPrintBalanceAlert: (
   balance: number,
+  cardNumber: string,
   onPrintPress: () => void,
-) => void = (balance, onPrintPress) => {
-  Alert.alert('Balance', `Your balance is : NAFL ${balance}`, [
-    {
-      text: 'Print',
-      onPress: onPrintPress,
-    },
-    {
-      text: 'OK',
-      onPress: noop,
-    },
-  ]);
+) => void = (balance, cardNumber, onPrintPress) => {
+  Alert.alert(
+    'Balance',
+    `Your balance for card number ${cardNumber} is : NAFL ${balance.toFixed(
+      2,
+    )}`,
+    [
+      {
+        text: 'Print',
+        onPress: onPrintPress,
+      },
+      {
+        text: 'OK',
+        onPress: noop,
+      },
+    ],
+  );
 };
 
 export const showAlertWithTwoButtons: (

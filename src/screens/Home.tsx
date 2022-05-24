@@ -166,7 +166,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       if (issuanceHistoryRes?.data) {
         const balance = parseFloat(issuanceHistoryRes?.data?.Balance);
 
-        showPrintBalanceAlert(balance, async () => {
+        showPrintBalanceAlert(balance, cardNumber, async () => {
           try {
             await printBalance(
               {
@@ -174,6 +174,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
                 code: issuanceHistoryRes.data?.clientCode,
                 name: issuanceHistoryRes.data?.clientName,
               },
+              cardNumber,
               loginData?.name,
               balance,
               issuanceHistoryRes?.data?.paybackPeriod ?? 0,
