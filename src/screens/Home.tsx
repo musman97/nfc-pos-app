@@ -14,9 +14,11 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+import {Picker} from '@react-native-picker/picker';
 import {logo} from '~/assets/images';
 import {Button, Header, Icons, Loader, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
+import {appModes} from '~/constants';
 import {useAuthContext} from '~/context/AuthContext';
 import {
   doGetDailyTransactions,
@@ -49,6 +51,7 @@ import {
   showToast,
 } from '~/utils';
 import {printText} from './../core/ReceiptPrinter';
+import PickerItem from './../../node_modules/@react-native-picker/picker/js/PickerItem';
 
 const testCardNumber = '0002';
 console.log('Test Card Number: ', testCardNumber);
@@ -66,6 +69,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [printPreviousReceiptLoading, setPrintPreviousReceiptLoading] =
     useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
+  const [selectPaybackPeriodModalShown, setSelectPaybackPeriodModalShown] =
+    useState(true);
+  const [paybackPeriods, setpaybackPeriods] = useState<Array<PickerItem>>([]);
+  const [selectedPaybackPeriod, setSelectedPaybackPeriod] = useState('');
   const [scanningStatus, setScanningStatus] =
     useState<NfcTagOperationStatus>('scanning');
   const [nfcTagScanningReason, setNfcTagScanningReason] =
@@ -214,6 +221,7 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     setLoading(false);
     setDailyReceiptPrintLoading(false);
     setBottomModalShown(false);
+    setSelectPaybackPeriodModalShown(false);
     setScanningStatus('scanning');
     setError('');
     setLoaderLoading(false);
@@ -297,6 +305,15 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     await printDailyReport();
   }, []);
 
+  const onPaybackPeriodSelected = useCallback(
+    (itemValue: string, indexIndex: number) => {
+      setSelectedPaybackPeriod(itemValue);
+    },
+    [],
+  );
+
+  const onSelectPaybackPeriodNextButtonPressed = useCallback(() => {}, []);
+
   const onTryAgainPressed = useCallback(() => {
     readTag();
   }, []);
@@ -327,12 +344,10 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, [scanningStatus]);
 
-  return (
-    <ScreenContainer>
-      <Header title="Home" hasLogoutButton hasSettingsButton />
-      <View style={styles.f1}>
-        <View style={styles.contentContainer}>
-          <Image source={logo} style={styles.logo} />
+  const renderButtons = useCallback(() => {
+    if (appModes === 'expense-retour') {
+      return (
+        <>
           <Button
             title="Expense"
             style={styles.scanNfcBtn}
@@ -344,6 +359,39 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             style={styles.scanNfcBtn}
             onPress={onScanNfcForRetourPressed}
           />
+        </>
+      );
+    } else if (appModes === 'expense') {
+      return (
+        <>
+          <Button
+            title="Expense"
+            style={styles.scanNfcBtn}
+            loading={loading}
+            onPress={onScanNfcPressed}
+          />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Button
+            title="Retour"
+            style={styles.scanNfcBtn}
+            onPress={onScanNfcForRetourPressed}
+          />
+        </>
+      );
+    }
+  }, []);
+
+  return (
+    <ScreenContainer>
+      <Header title="Home" hasLogoutButton hasSettingsButton />
+      <View style={styles.f1}>
+        <View style={styles.contentContainer}>
+          <Image source={logo} style={styles.logo} />
+          {renderButtons()}
           <Button
             loading={printPreviousReceiptLoading}
             title="Print Previous Receipt"
@@ -375,6 +423,31 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             />
           </TouchableOpacity>
           {renderModalContent()}
+        </View>
+      </BottomModal>
+      <BottomModal visible={selectPaybackPeriodModalShown}>
+        <View
+          style={[
+            styles.modalContainer,
+            styles.selectPaybackPeriodModalContainer,
+          ]}>
+          <Text style={styles.selectPaybackPeriodLabelText}>
+            Please select a payback period
+          </Text>
+          <Picker
+            style={styles.paybackPeriodPicker}
+            mode="dropdown"
+            selectedValue={selectedPaybackPeriod}
+            onValueChange={onPaybackPeriodSelected}>
+            <Picker.Item label="1 month" value="1" />
+            <Picker.Item label="2 months" value="2" />
+            <Picker.Item label="4 months" value="4" />
+          </Picker>
+          <Button
+            title="Next"
+            style={styles.selectPaybackPeriodModalNextBtn}
+            onPress={onSelectPaybackPeriodNextButtonPressed}
+          />
         </View>
       </BottomModal>
       <Loader visible={loaderLoading} />
@@ -410,6 +483,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '90%',
     paddingVertical: responsiveHeight(2),
+  },
+  selectPaybackPeriodModalContainer: {
+    alignItems: 'center',
   },
   closeBottomModalBtn: {
     alignSelf: 'flex-end',
@@ -451,6 +527,16 @@ const styles = StyleSheet.create({
   },
   submitPinCodeBtn: {
     marginTop: responsiveHeight(2),
+    width: '60%',
+  },
+  selectPaybackPeriodLabelText: {
+    fontSize: responsiveFontSize(2.5),
+    color: Colors.black,
+  },
+  paybackPeriodPicker: {
+    width: '50%',
+  },
+  selectPaybackPeriodModalNextBtn: {
     width: '60%',
   },
 });

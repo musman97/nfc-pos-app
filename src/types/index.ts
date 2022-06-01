@@ -3,6 +3,11 @@ import {routeNames} from '~/navigation/routeNames';
 
 // Common
 
+export type PickerItem = {
+  title: string;
+  value: string;
+};
+
 export type PrinterConfig = {
   printerDpi: number;
   printerWidthMM: number;
@@ -40,6 +45,8 @@ export type ParseTagResult = {
 export type NfcTagOperationStatus = 'scanning' | 'error' | 'success' | 'none';
 
 export type NfcTagScanningReason = 'expense' | 'balance' | 'retour';
+
+export type AppMode = 'expense-retour' | 'expense' | 'retour';
 
 // Api Requests and Responses
 
