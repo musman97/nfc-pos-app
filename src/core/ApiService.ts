@@ -15,6 +15,8 @@ import {
   GetIssuanceHistoryResponse,
   GetMerchantIdApiResponse,
   GetMerchantIdResponse,
+  GetMultipleIssuanceHistoriesApiResponse,
+  GetMultipleIssuanceHistoriesResponse,
   IssuanceHistory,
   LoginApiRequest,
   LoginApiResponse,
@@ -130,6 +132,54 @@ export const doGetIssuanceHistory: (
 
       return {
         data: issuanceHistory,
+      };
+    }
+  } catch (error) {
+    console.log('Error Getting Issuance Histroy: ', error);
+
+    if (Axios.isAxiosError(error)) {
+      const _error = error as AxiosError<GetIssuanceHistoryApiResponse>;
+
+      return {
+        message: _error.response.data?.error || 'Something went wrong',
+      };
+    }
+
+    return {
+      message: 'Something went wrong',
+    };
+  }
+};
+
+export const doGetMultipleIssuanceHistories: (
+  cardId: string,
+) => Promise<GetMultipleIssuanceHistoriesResponse> = async cardId => {
+  try {
+    const axios = await getAxiosInstanceWithAuthHeader();
+
+    const response = await axios.post<
+      GetMultipleIssuanceHistoriesApiResponse,
+      AxiosResponse<
+        GetMultipleIssuanceHistoriesApiResponse,
+        GetIssuanceHistoryApiRequest
+      >,
+      GetIssuanceHistoryApiRequest
+    >(mainEndpoints.getMultipleIssuanceHistories, {
+      nfcCardId: cardId,
+    });
+
+    if (response.data?.data) {
+      const issuanceHistories: Array<IssuanceHistory> = response.data.data.map(
+        data => ({
+          ...data.data,
+          clientCode: data?.clientCodeAndFullName?.Code,
+          clientName: data?.clientCodeAndFullName?.FullName,
+          paybackPeriod: data?.clientCodeAndFullName?.numberOfMonths,
+        }),
+      );
+
+      return {
+        data: issuanceHistories,
       };
     }
   } catch (error) {

@@ -3,6 +3,7 @@ import {Alert, ToastAndroid} from 'react-native';
 import {PrinterConfig} from '~/types';
 
 const floatNumberRegex = /^(\d+(\.\d+)?)$|^(.?\d+)$/;
+const twoDecimalPlaceRegex = /^[0-9]*.?[0-9]{1,2}$/;
 const intNumberRegex = /^[0-9]+$/;
 const emailRegex =
   /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -29,6 +30,9 @@ export const flatListKeyExtractor: (item: any, index: number) => string = (
 
 export const isValidFloatNumber: (value: string) => boolean = value =>
   floatNumberRegex.test(value);
+
+export const isValidAmount: (value: string) => boolean = value =>
+  twoDecimalPlaceRegex.test(value);
 
 export const isValidIntNumber: (value: string) => boolean = value =>
   intNumberRegex.test(value);

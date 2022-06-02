@@ -1,5 +1,6 @@
+import {Picker} from '@react-native-picker/picker';
 import moment from 'moment';
-import React, {FC, useCallback, useEffect, useState} from 'react';
+import React, {FC, useCallback, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +15,6 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
-import {Picker} from '@react-native-picker/picker';
 import {logo} from '~/assets/images';
 import {Button, Header, Icons, Loader, ScreenContainer} from '~/components';
 import BottomModal from '~/components/BottomModal';
@@ -22,8 +22,7 @@ import {appModes} from '~/constants';
 import {useAuthContext} from '~/context/AuthContext';
 import {
   doGetDailyTransactions,
-  doGetIssuanceHistory,
-  doPostDailySalesPrintCheck,
+  doGetMultipleIssuanceHistories,
 } from '~/core/ApiService';
 import {
   getDailyReportPrintedDate,
@@ -41,8 +40,10 @@ import {routeNames} from '~/navigation/routeNames';
 import {Colors} from '~/styles';
 import {
   HomeScreenNavProp,
+  IssuanceHistory,
   NfcTagOperationStatus,
   NfcTagScanningReason,
+  PickerItem,
 } from '~/types';
 import {
   getCurrentUtcTimestamp,
@@ -51,7 +52,6 @@ import {
   showToast,
 } from '~/utils';
 import {printText} from './../core/ReceiptPrinter';
-import PickerItem from './../../node_modules/@react-native-picker/picker/js/PickerItem';
 
 const testCardNumber = '0002';
 console.log('Test Card Number: ', testCardNumber);
@@ -70,8 +70,8 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     useState(false);
   const [bottomModalShown, setBottomModalShown] = useState(false);
   const [selectPaybackPeriodModalShown, setSelectPaybackPeriodModalShown] =
-    useState(true);
-  const [paybackPeriods, setpaybackPeriods] = useState<Array<PickerItem>>([]);
+    useState(false);
+  const [paybackPeriods, setPaybackPeriods] = useState<Array<PickerItem>>([]);
   const [selectedPaybackPeriod, setSelectedPaybackPeriod] = useState('');
   const [scanningStatus, setScanningStatus] =
     useState<NfcTagOperationStatus>('scanning');
@@ -80,6 +80,8 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
   const [error, setError] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [loaderLoading, setLoaderLoading] = useState(false);
+
+  const issuanceHistoriesRef = useRef<Array<IssuanceHistory> | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -139,64 +141,29 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     clearAllStates();
     setLoaderLoading(true);
 
-    const issuanceHistoryRes = await doGetIssuanceHistory(cardNumber);
-    console.log('Issucance History: ', issuanceHistoryRes?.data);
+    const issuanceHistoriesRes = await doGetMultipleIssuanceHistories(
+      cardNumber,
+    );
+    console.log('Issucance Histories: ', issuanceHistoriesRes?.data);
 
-    if (nfcTagScanningReason !== 'balance') {
-      if (issuanceHistoryRes?.data) {
-        setLoaderLoading(false);
-
-        navigate(routeNames.PrintExpense, {
-          client: {
-            id: issuanceHistoryRes.data?.Client_id,
-            code: issuanceHistoryRes.data?.clientCode,
-            name: issuanceHistoryRes.data?.clientName,
-          },
-          paybackPeriod: issuanceHistoryRes.data?.paybackPeriod,
-          maxAmount: parseFloat(
-            nfcTagScanningReason === 'expense'
-              ? issuanceHistoryRes?.data?.Balance
-              : issuanceHistoryRes?.data?.Amount,
-          ),
-          cardId: cardNumber,
-          pinCode: issuanceHistoryRes.data.Pincode,
-          issuanceHistoryId: issuanceHistoryRes?.data?.id,
-          paymentType: nfcTagScanningReason,
-        });
-      } else {
-        setLoaderLoading(false);
-        showToast(issuanceHistoryRes?.message);
-      }
-    } else {
+    if (issuanceHistoriesRes.message) {
       setLoaderLoading(false);
+      showToast(issuanceHistoriesRes?.message);
+    } else {
+      const paybackPickerItems: Array<PickerItem> =
+        issuanceHistoriesRes?.data?.map(issuanceHistory => ({
+          title: `${issuanceHistory.paybackPeriod} month${
+            issuanceHistory?.paybackPeriod > 1 ? 's' : ''
+          }`,
+          value: `${issuanceHistory?.paybackPeriod}`,
+        }));
 
-      if (issuanceHistoryRes?.data) {
-        const balance = parseFloat(issuanceHistoryRes?.data?.Balance);
-
-        showPrintBalanceAlert(balance, cardNumber, async () => {
-          try {
-            await printBalance(
-              {
-                id: issuanceHistoryRes.data?.Client_id,
-                code: issuanceHistoryRes.data?.clientCode,
-                name: issuanceHistoryRes.data?.clientName,
-              },
-              cardNumber,
-              loginData?.name,
-              balance,
-              issuanceHistoryRes?.data?.paybackPeriod ?? 0,
-            );
-          } catch (error) {
-            console.log('Error printing Balance');
-
-            showToast(error.message);
-          }
-        });
-      } else {
-        showToast(issuanceHistoryRes?.message);
-      }
+      setLoaderLoading(false);
+      issuanceHistoriesRef.current = issuanceHistoriesRes?.data;
+      setPaybackPeriods(paybackPickerItems);
+      showSelectPaybackPeriodModal();
     }
-  }, [cardNumber, nfcTagScanningReason]);
+  }, [cardNumber]);
 
   const showBottomModal = useCallback(async () => {
     try {
@@ -215,6 +182,15 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     } catch (error) {
       console.log('Error checking nfc status', error);
     }
+  }, []);
+
+  const showSelectPaybackPeriodModal = useCallback(() => {
+    setSelectPaybackPeriodModalShown(true);
+  }, []);
+
+  const hideSelectPaybackPeriodModal = useCallback(() => {
+    setSelectedPaybackPeriod('');
+    setSelectPaybackPeriodModalShown(false);
   }, []);
 
   const clearAllStates = () => {
@@ -312,7 +288,64 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     [],
   );
 
-  const onSelectPaybackPeriodNextButtonPressed = useCallback(() => {}, []);
+  const onSelectPaybackPeriodNextButtonPressed = useCallback(() => {
+    if (selectedPaybackPeriod && selectedPaybackPeriod !== 'none') {
+      const paybackPeriodIndex = issuanceHistoriesRef.current?.findIndex(
+        issuanceHistory =>
+          `${issuanceHistory.paybackPeriod}` === selectedPaybackPeriod,
+      );
+      const issuanceHistory = issuanceHistoriesRef.current[paybackPeriodIndex];
+      hideSelectPaybackPeriodModal();
+
+      if (nfcTagScanningReason === 'balance') {
+        const balance = parseFloat(issuanceHistory?.Balance);
+
+        showPrintBalanceAlert(balance, cardNumber, async () => {
+          try {
+            await printBalance(
+              {
+                id: issuanceHistory?.Client_id,
+                code: issuanceHistory?.clientCode,
+                name: issuanceHistory?.clientName,
+              },
+              cardNumber,
+              loginData?.name,
+              balance,
+              issuanceHistory?.paybackPeriod ?? 0,
+            );
+          } catch (error) {
+            console.log('Error printing Balance');
+
+            showToast(error.message);
+          }
+        });
+      } else {
+        navigate(routeNames.PrintExpense, {
+          client: {
+            id: issuanceHistory?.Client_id,
+            code: issuanceHistory?.clientCode,
+            name: issuanceHistory?.clientName,
+          },
+          paybackPeriod: issuanceHistory?.paybackPeriod,
+          maxAmount: parseFloat(
+            nfcTagScanningReason === 'expense'
+              ? issuanceHistory?.Balance
+              : issuanceHistory?.Amount,
+          ),
+          cardId: cardNumber,
+          pinCode: issuanceHistory?.Pincode,
+          issuanceHistoryId: issuanceHistory?.id,
+          paymentType: nfcTagScanningReason,
+        });
+      }
+    } else {
+      showToast('Please select payback period');
+    }
+  }, [
+    selectedPaybackPeriod,
+    issuanceHistoriesRef.current,
+    nfcTagScanningReason,
+  ]);
 
   const onTryAgainPressed = useCallback(() => {
     readTag();
@@ -385,6 +418,19 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
     }
   }, []);
 
+  const renderPaybackPeriodItems = useCallback(
+    () =>
+      paybackPeriods.map((paybackPeriod, index) => (
+        <Picker.Item
+          key={index}
+          label={paybackPeriod.title}
+          value={paybackPeriod.value}
+          color={Colors.black}
+        />
+      )),
+    [paybackPeriods],
+  );
+
   return (
     <ScreenContainer>
       <Header title="Home" hasLogoutButton hasSettingsButton />
@@ -431,6 +477,15 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             styles.modalContainer,
             styles.selectPaybackPeriodModalContainer,
           ]}>
+          <TouchableOpacity
+            style={styles.closeBottomModalBtn}
+            onPress={hideSelectPaybackPeriodModal}>
+            <Icons.MaterialIcons
+              name="close"
+              color={Colors.black}
+              size={responsiveFontSize(4)}
+            />
+          </TouchableOpacity>
           <Text style={styles.selectPaybackPeriodLabelText}>
             Please select a payback period
           </Text>
@@ -439,9 +494,12 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
             mode="dropdown"
             selectedValue={selectedPaybackPeriod}
             onValueChange={onPaybackPeriodSelected}>
-            <Picker.Item label="1 month" value="1" />
-            <Picker.Item label="2 months" value="2" />
-            <Picker.Item label="4 months" value="4" />
+            <Picker.Item
+              label="Select Payback Period"
+              value="none"
+              color={Colors.gray}
+            />
+            {renderPaybackPeriodItems()}
           </Picker>
           <Button
             title="Next"
@@ -534,7 +592,7 @@ const styles = StyleSheet.create({
     color: Colors.black,
   },
   paybackPeriodPicker: {
-    width: '50%',
+    width: '80%',
   },
   selectPaybackPeriodModalNextBtn: {
     width: '60%',

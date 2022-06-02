@@ -18,7 +18,7 @@ import {
   Transaction,
   TransactionType,
 } from '~/types';
-import {isValidFloatNumber, showAlert, showToast} from '~/utils';
+import {isValidAmount, showAlert, showToast} from '~/utils';
 
 const merchantPinCodeModalText = 'Please Enter the Merchant Pin code';
 const defaultPinCodeModalText = 'Please Enter the Pin Code to Verify Nfc Card';
@@ -148,10 +148,10 @@ const PrintExpense: FC<Props> = ({route, navigation}) => {
       return;
     }
 
-    if (!isValidFloatNumber(_expensePrice)) {
+    if (!isValidAmount(_expensePrice) || parseFloat(_expensePrice) === 0) {
       showAlert(
         'Invalid Amount',
-        'Expense Amount entered is invalid. Only numbers are allowed',
+        'Expense Amount entered is invalid. Only numbers greater than 0 and upto 2 decimal places are allowed',
       );
       return;
     }
