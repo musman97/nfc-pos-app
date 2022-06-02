@@ -124,12 +124,39 @@ export type GetIssuanceHistoryApiResponse = {
   };
 };
 
+export type GetMultipleIssuanceHistoriesApiResponse = {
+  error?: string;
+  data?: Array<{
+    data?: {
+      id?: string;
+      Client_id?: string;
+      Pincode?: string;
+      DateTime?: string;
+      Amount?: string;
+      AmountPaid?: string;
+      Balance?: string;
+    };
+    clientCodeAndFullName?: {
+      Code?: string;
+      FullName?: string;
+      numberOfMonths?: number;
+    };
+  }>;
+};
+
 export type GetIssuanceHistorySuccessResponse = {
   data?: IssuanceHistory;
 };
 
+export type GetIssuanceHistoriesSuccessResponse = {
+  data?: Array<IssuanceHistory>;
+};
+
 export type GetIssuanceHistoryResponse = GetIssuanceHistorySuccessResponse &
   GeneralFailureResponse;
+
+export type GetMultipleIssuanceHistoriesResponse =
+  GetIssuanceHistoriesSuccessResponse & GeneralFailureResponse;
 
 export type Client = {
   id: string;
