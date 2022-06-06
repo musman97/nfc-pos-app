@@ -300,25 +300,28 @@ const Home: FC<Props> = ({navigation: {navigate}}) => {
       if (nfcTagScanningReason === 'balance') {
         const balance = parseFloat(issuanceHistory?.Balance);
 
-        showPrintBalanceAlert(balance, cardNumber, async () => {
-          try {
-            await printBalance(
-              {
-                id: issuanceHistory?.Client_id,
-                code: issuanceHistory?.clientCode,
-                name: issuanceHistory?.clientName,
-              },
-              cardNumber,
-              loginData?.name,
-              balance,
-              issuanceHistory?.paybackPeriod ?? 0,
-            );
-          } catch (error) {
-            console.log('Error printing Balance');
+        showPrintBalanceAlert(
+          {balance, cardNumber, customerName: issuanceHistory?.clientName},
+          async () => {
+            try {
+              await printBalance(
+                {
+                  id: issuanceHistory?.Client_id,
+                  code: issuanceHistory?.clientCode,
+                  name: issuanceHistory?.clientName,
+                },
+                cardNumber,
+                loginData?.name,
+                balance,
+                issuanceHistory?.paybackPeriod ?? 0,
+              );
+            } catch (error) {
+              console.log('Error printing Balance');
 
-            showToast(error.message);
-          }
-        });
+              showToast(error.message);
+            }
+          },
+        );
       } else {
         navigate(routeNames.PrintExpense, {
           client: {

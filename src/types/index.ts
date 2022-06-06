@@ -48,6 +48,12 @@ export type NfcTagScanningReason = 'expense' | 'balance' | 'retour';
 
 export type AppMode = 'expense-retour' | 'expense' | 'retour';
 
+export type PrintBalanceInfo = {
+  balance?: number;
+  cardNumber?: string;
+  customerName?: string;
+};
+
 // Api Requests and Responses
 
 export type GeneralFailureResponse = {

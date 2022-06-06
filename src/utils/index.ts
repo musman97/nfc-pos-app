@@ -1,6 +1,6 @@
 import moment from 'moment';
 import {Alert, ToastAndroid} from 'react-native';
-import {PrinterConfig} from '~/types';
+import {PrintBalanceInfo, PrinterConfig} from '~/types';
 
 const floatNumberRegex = /^(\d+(\.\d+)?)$|^(.?\d+)$/;
 const twoDecimalPlaceRegex = /^[0-9]*.?[0-9]{1,2}$/;
@@ -57,13 +57,12 @@ export const showPrintDailyReportAlert = () => {
 };
 
 export const showPrintBalanceAlert: (
-  balance: number,
-  cardNumber: string,
+  printBalanceInfo: PrintBalanceInfo,
   onPrintPress: () => void,
-) => void = (balance, cardNumber, onPrintPress) => {
+) => void = ({balance, cardNumber, customerName}, onPrintPress) => {
   Alert.alert(
     'Balance',
-    `Your balance for card number ${cardNumber} is : NAFL ${balance.toFixed(
+    `${customerName} Your balance for card number ${cardNumber} is : NAFL ${balance.toFixed(
       2,
     )}`,
     [
